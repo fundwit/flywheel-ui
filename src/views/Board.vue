@@ -1,74 +1,122 @@
 <template>
   <div>
-    <!--使用draggable组件-->
-    <div class="itxst">
-      <div class="col" v-for="(works, stateName) in groupedWorks" :key="stateName">
-        <div class="title" >{{stateName}} ({{works.length}})</div>
-
-        <draggable v-model="groupedWorks[stateName]" group="site"  animation="300" dragClass="dragClass"  ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
-          <transition-group>
-            <div class="item" v-for="item in groupedWorks[stateName]" :key="item.id">{{item.name}}</div>
-          </transition-group>
+    <el-row>
+      <el-col :span="8" v-for="state in states" :key="state.name">
+        <draggable :id="'stack-'+state.name" :data-state="state.name" class="list-group" :class="{'state-valid': state.canTransitionTo}"
+                   :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.name]" draggable=".item"
+                   animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
+          <div slot="header" :id="'col-'+state.name" class="state-header list-group-item" role="group" aria-label="Basic example">
+            {{state.name}}
+          </div>
+          <div class="list-group-item item" :data-state="work.stateName" :data-id="work.id" v-for="work in groupedWorks[state.name]" :key="work.name">
+            <div>{{ work.name }}</div>
+            <div>{{ work.createTime }}</div>
+          </div>
         </draggable>
-      </div>
-<!--      <div  class="col">-->
-<!--        <div class="title" >你可以把左边的元素拖到右边</div>-->
-<!--        <draggable v-model="arr2" group="site" animation="300" dragClass="dragClass"  ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">-->
-<!--          <transition-group>-->
-<!--            <div class="item" v-for="item in arr2" :key="item.id">{{item.name}}</div>-->
-<!--          </transition-group>-->
-<!--        </draggable>-->
-<!--      </div>-->
-    </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
-// 导入draggable组件
 import draggable from 'vuedraggable'
 import client from '../flywheel'
 import _ from 'lodash'
+
 export default {
-  // 注册draggable组件
   components: {
     draggable
   },
   data () {
     return {
-      drag: false,
+      draggedWork: null,
       // 定义要被拖拽对象的数组
-      groupedWorks: {}
+      groupedWorks: {},
+      states: []
     }
   },
   mounted () {
-    this.loadWorks()
+    this.loadWorkflow()
   },
   methods: {
+    loadWorkflow () {
+      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+      const vue = this
+      client.loadStates().then((resp) => {
+        vue.states = resp
+        _.forEach(vue.states, (state, idx) => {
+          vue.$set(vue.groupedWorks, state.name, [])
+        })
+        mask.close()
+        vue.loadWorks()
+      }).catch((error) => {
+        mask.close()
+        this.$notify.error({ title: 'Error', message: 'failed to load workflow: ' + error })
+      })
+    },
     loadWorks () {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
       client.queryWork().then((resp) => {
-        // vue.$set('works', response.data.data)
-        // group by state
-        vue.groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
-        debugger
-        // load and compute union status
-
-        vue.total = resp.total
-      }).catch((error) => {
-        this.$notify.error({
-          title: 'Error',
-          message: '数据加载失败' + error
+        const groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
+        _.forEach(groupedWorks, (works, stateName) => {
+          vue.$set(vue.groupedWorks, stateName, works)
         })
+      }).catch((error) => {
+        this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {
         mask.close()
       })
     },
-    onStart () {
-      this.drag = true
+    onStart (event) {
+      const fromState = event.from.getAttribute('data-state')
+      this.draggedWork = this.groupedWorks[fromState][event.oldIndex - 1]
+      const vue = this
+      client.loadAvailableTransitions(fromState).then(r => {
+        const availableStates = _.flatMap(r, transition => {
+          return transition.to.name
+        })
+        availableStates.push(fromState)
+        _.forEach(vue.states, (state, idx) => {
+          if (_.includes(availableStates, state.name)) {
+            state.canTransitionTo = true
+            vue.$set(vue.states, idx, state)
+          }
+        })
+      }).catch(error => {
+        this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
+      })
     },
-    onEnd () {
-      this.drag = false
+    onEnd (event) {
+      const vue = this
+      // remove dynamic class
+      _.forEach(vue.states, (state, idx) => {
+        state.canTransitionTo = false
+        vue.$set(vue.states, idx, state)
+      })
+
+      const fromState = event.from.getAttribute('data-state')
+      const toState = event.to.getAttribute('data-state')
+      const workId = event.item.getAttribute('data-id')
+      const flowId = this.draggedWork.flowId
+
+      if (fromState === toState) {
+        this.draggedWork = null
+        return
+      }
+
+      client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
+        this.draggedWork.stateName = toState
+      }).catch(error => {
+        vue.groupedWorks[toState].splice(event.newIndex - 1, 1)
+        vue.groupedWorks[fromState].splice(event.oldIndex - 1, 0, this.draggedWork)
+        vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
+        vue.$set(vue.groupedWorks, fromState, vue.groupedWorks[fromState])
+
+        this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
+      }).finally(() => {
+        this.draggedWork = null
+      })
     }
   }
 }
@@ -79,7 +127,7 @@ export default {
     background-color:  blue !important;
   }
   .chosenClass{
-    background-color: red !important;
+    background-color: #fde402 !important;
     opacity: 1!important;
   }
   .dragClass{
@@ -89,25 +137,15 @@ export default {
     outline:none !important;
     background-image:none !important;
   }
-  .itxst{
-    margin: 10px;
-
+  .state-header {
+    padding: 1em;
   }
-  .title{
-    padding: 6px 12px;
+  .list-group {
+    margin: 1em;
   }
-  .col{
-    width: 40%;
-    flex: 1;
-    padding: 10px;
-    border: solid 1px #eee;
-    border-radius:5px ;
-    float: left;
+  .state-valid {
+    background-color: #42b983;
   }
-  .col+.col{
-    margin-left: 10px;
-  }
-
   .item{
     padding: 6px 12px;
     margin: 0px 10px 0px 10px;

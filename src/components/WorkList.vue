@@ -13,23 +13,23 @@
     <el-table
       :data="works"
       style="width: 100%">
-      <el-table-column
-        prop="name"
-        label="名称">
+      <el-table-column prop="name" label="名称">
+        <template slot-scope="scope">
+          <span v-if="!scope.row.isEditing">{{ scope.row.name }}</span>
+          <el-input v-if="scope.row.isEditing" v-model="editingWork.name" placeholder="请输入内容"></el-input>
+        </template>
       </el-table-column>
-      <el-table-column
-        prop="stateName"
-        label="状态">
+      <el-table-column prop="stateName" label="状态">
       </el-table-column>
-      <el-table-column
-        prop="createTime"
-        label="创建时间"
-        width="180">
+      <el-table-column prop="createTime" label="创建时间" width="180">
       </el-table-column>
       <el-table-column
         prop="action" label="操作">
         <template slot-scope="scope">
-          <el-button @click="onDeleteWork(scope.row)" type="text" size="small">删除</el-button>
+          <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
+          <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>
+          <el-button v-if="scope.row.isEditing" @click="onAbortEdit(scope)" type="text" size="small">取消</el-button>
+          <el-button v-if="!scope.row.isEditing" @click="onDeleteWork(scope.row)" type="text" size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -38,6 +38,7 @@
 
 <script>
 import client from '../flywheel'
+import _ from 'lodash'
 
 export default {
   name: 'WorkList',
@@ -50,6 +51,7 @@ export default {
         group: 'default'
       },
       works: [],
+      editingWork: null,
       total: 0
     }
   },
@@ -71,16 +73,12 @@ export default {
         vue.works = resp.data
         vue.total = resp.total
       }).catch((error) => {
-        this.$notify.error({
-          title: 'Error',
-          message: '数据加载失败' + error
-        })
+        this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {
         mask.close()
       })
     },
     onCreateWork () {
-      // trigger
       const mask = this.$loading({
         lock: true,
         text: 'Creating',
@@ -90,14 +88,43 @@ export default {
       client.createWork(this.creationForm).then((response) => {
         this.loadWorks()
       }).catch((error) => {
-        debugger
-        this.$notify.error({
-          title: 'Error',
-          message: '创建失败' + error
-        })
+        this.$notify.error({ title: 'Error', message: '创建失败' + error })
       }).finally(() => {
         mask.close()
       })
+    },
+    onEditWork (scope) {
+      this.editingWork = _.cloneDeep(scope.row)
+      scope.row.isEditing = true
+      this.$set(this.works, scope.$index, scope.row)
+    },
+    onSaveEdit (scope) {
+      // compute differences between changes with origin
+      const changes = {}
+      _.forOwn(this.editingWork, (value, key) => {
+        if (value !== scope.row[key]) {
+          changes[key] = value
+        }
+      })
+      // return if no changes
+      if (_.keys(changes).length === 0) {
+        this.abortEdit(scope, scope.row)
+        this.$notify.warning({ title: 'Warning', message: 'no changes' })
+        return
+      }
+      client.updateWork(scope.row.id, changes).then(data => {
+        this.abortEdit(scope, this.editingWork)
+      }).catch(error => {
+        this.$notify.error({ title: 'Error', message: '更新失败' + error })
+      })
+    },
+    onAbortEdit (scope) {
+      this.abortEdit(scope, scope.row)
+    },
+    abortEdit (scope, updateTo) {
+      this.editingWork = null
+      delete scope.row.isEditing
+      this.$set(this.works, scope.$index, updateTo)
     },
     onDeleteWork (row) {
       this.$confirm('此操作将永久删除工作: "' + row.name + '", 是否继续?', '提示', {
@@ -115,18 +142,12 @@ export default {
         client.deleteWork(row.id).then((response) => {
           this.loadWorks()
         }).catch((error) => {
-          this.$notify.error({
-            title: 'Error',
-            message: '删除失败' + error
-          })
+          this.$notify.error({ title: 'Error', message: '删除失败' + error })
         }).finally(() => {
           mask.close()
         })
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
+        this.$message({ type: 'info', message: '已取消删除' })
       })
     }
   }

@@ -25,8 +25,25 @@ export class FlywheelClient {
     return `${this.url}${path}`
   }
 
+  async loadStates () {
+    return axios.get(this.withPath('/v1/workflows/1/states')).then(r => r.data)
+  }
+
+  async loadAvailableTransitions (from) {
+    return axios.get(this.withPath('/v1/workflows/1/transitions?fromState=' + from)).then(r => r.data)
+  }
+
+  async createWorkTransition (flowID, workID, from, to) {
+    return axios.post(this.withPath('/v1/transitions'),
+      { flowId: flowID, workId: workID, fromState: from, toState: to }).then(r => r.data)
+  }
+
   async createWork (creationForm) {
     return axios.post(this.withPath('/v1/works'), creationForm).then(r => r.data)
+  }
+
+  async updateWork (id, updateData) {
+    return axios.put(this.withPath('/v1/works/' + id), updateData).then(r => r.data)
   }
 
   async queryWork () {
