@@ -1,13 +1,16 @@
 <template>
   <div>
+    <div class="page-header">个人看板 工作数量 支持的工作类型</div>
     <el-row>
       <el-col :span="8" v-for="state in states" :key="state.name">
+        <div :id="'col-'+state.name" class="state-header" role="group" aria-label="Basic example">
+          {{state.name}}
+        </div>
         <draggable :id="'stack-'+state.name" :data-state="state.name" class="list-group" :class="{'state-valid': state.canTransitionTo}"
+                   :style="conHeight"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
-          <div slot="header" :id="'col-'+state.name" class="state-header list-group-item" role="group" aria-label="Basic example">
-            {{state.name}}
-          </div>
+
           <div class="list-group-item item" :data-state="work.stateName" :data-id="work.id" v-for="work in groupedWorks[state.name]" :key="work.name">
             <div>{{ work.name }}</div>
             <div>{{ work.createTime }}</div>
@@ -30,15 +33,24 @@ export default {
   data () {
     return {
       draggedWork: null,
-      // 定义要被拖拽对象的数组
       groupedWorks: {},
-      states: []
+      states: [],
+      conHeight: {
+        height: ''
+      }
     }
+  },
+  created () {
+    window.addEventListener('resize', this.computeHeight)
+    this.computeHeight()
   },
   mounted () {
     this.loadWorkflow()
   },
   methods: {
+    computeHeight () {
+      this.conHeight.height = window.innerHeight - 200 + 'px'
+    },
     loadWorkflow () {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
@@ -70,7 +82,7 @@ export default {
     },
     onStart (event) {
       const fromState = event.from.getAttribute('data-state')
-      this.draggedWork = this.groupedWorks[fromState][event.oldIndex - 1]
+      this.draggedWork = this.groupedWorks[fromState][event.oldIndex]
       const vue = this
       client.loadAvailableTransitions(fromState).then(r => {
         const availableStates = _.flatMap(r, transition => {
@@ -94,7 +106,6 @@ export default {
         state.canTransitionTo = false
         vue.$set(vue.states, idx, state)
       })
-
       const fromState = event.from.getAttribute('data-state')
       const toState = event.to.getAttribute('data-state')
       const workId = event.item.getAttribute('data-id')
@@ -108,8 +119,8 @@ export default {
       client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
         this.draggedWork.stateName = toState
       }).catch(error => {
-        vue.groupedWorks[toState].splice(event.newIndex - 1, 1)
-        vue.groupedWorks[fromState].splice(event.oldIndex - 1, 0, this.draggedWork)
+        vue.groupedWorks[toState].splice(event.newIndex, 1)
+        vue.groupedWorks[fromState].splice(event.oldIndex, 0, this.draggedWork)
         vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
         vue.$set(vue.groupedWorks, fromState, vue.groupedWorks[fromState])
 
@@ -122,7 +133,11 @@ export default {
 }
 </script>
 <style scoped>
-  /*定义要拖拽元素的样式*/
+  .page-header {
+    padding: 10px;
+    border-bottom: 1px solid #EEEEEE;
+  }
+
   .ghostClass{
     background-color:  blue !important;
   }
@@ -138,23 +153,29 @@ export default {
     background-image:none !important;
   }
   .state-header {
-    padding: 1em;
+    margin: 1em;
+    padding: 10px;
+    background-color: #F8F8F8;
   }
   .list-group {
     margin: 1em;
+    padding: 10px;
+    background-color: #F8F8F8;
   }
   .state-valid {
-    background-color: #42b983;
+    background-color: lightgreen;
   }
   .item{
-    padding: 6px 12px;
-    margin: 0px 10px 0px 10px;
+    cursor: pointer;
+    padding: 12px;
+    margin-bottom: 15px;
     border:  solid 1px #eee;
-    background-color: #f1f1f1;
+    background-color: white;
+    box-shadow: 0 1px 6px 0 rgba(0,0,0,.1);
   }
   .item:hover{
     background-color: #fdfdfd;
-    cursor: move;
+    box-shadow: 0 2px 12px 1px rgba(0,0,0,.2);
   }
   .item+.item{
     border-top:none ;

@@ -1,17 +1,20 @@
 <template>
   <div class="home">
-    <WorkList msg="Welcome to Your Vue.js App"/>
+    <WorkList/>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
 import WorkList from '@/components/WorkList.vue'
 
 export default {
   name: 'Home',
   components: {
-    WorkList: WorkList
+    WorkList
+  },
+  data () {
+    return {
+    }
   }
 }
 </script>

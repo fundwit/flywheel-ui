@@ -2,6 +2,7 @@ import axios from 'axios'
 import adapter from 'axios/lib/adapters/http'
 
 axios.defaults.adapter = adapter
+axios.defaults.withCredentials = true
 
 export class FlywheelClient {
   constructor (url) {
@@ -23,6 +24,14 @@ export class FlywheelClient {
       path = '/' + path
     }
     return `${this.url}${path}`
+  }
+
+  async login (form) {
+    return axios.post(this.withPath('/login'), form).then(r => r.data)
+  }
+
+  async queryIdentity (form) {
+    return axios.get(this.withPath('/me'), form).then(r => r.data)
   }
 
   async loadStates () {
