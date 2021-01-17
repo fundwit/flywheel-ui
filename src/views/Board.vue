@@ -47,11 +47,31 @@ export default {
   mounted () {
     this.loadWorkflow()
   },
+  watch: {
+    $route: {
+      handler () {
+        this.loadWorkflow()
+      },
+      deep: true
+    }
+  },
   methods: {
+    clear () {
+      this.draggedWork = null
+      this.groupedWorks = {}
+      this.states = []
+    },
     computeHeight () {
       this.conHeight.height = window.innerHeight - 200 + 'px'
     },
     loadWorkflow () {
+      this.clear()
+
+      const groupId = this.$route.query.projectId
+      if (!groupId) {
+        return
+      }
+
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
       client.loadStates().then((resp) => {
@@ -67,9 +87,13 @@ export default {
       })
     },
     loadWorks () {
+      const groupId = this.$route.query.projectId
+      if (!groupId) {
+        return
+      }
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
-      client.queryWork().then((resp) => {
+      client.queryWork(groupId).then((resp) => {
         const groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
         _.forEach(groupedWorks, (works, stateName) => {
           vue.$set(vue.groupedWorks, stateName, works)

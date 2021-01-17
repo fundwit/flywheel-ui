@@ -8,7 +8,7 @@
 import WorkList from '@/components/WorkList.vue'
 
 export default {
-  name: 'Home',
+  name: 'WorkBacklog',
   components: {
     WorkList
   },

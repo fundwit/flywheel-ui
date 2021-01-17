@@ -47,8 +47,7 @@ export default {
   data () {
     return {
       creationForm: {
-        name: '',
-        group: 'default'
+        name: ''
       },
       works: [],
       editingWork: null,
@@ -58,17 +57,31 @@ export default {
   mounted () {
     this.loadWorks()
   },
+  watch: {
+    $route: {
+      handler () {
+        this.loadWorks()
+      },
+      deep: true
+    }
+  },
   methods: {
+    clear () {
+      this.works = []
+      this.editingWork = null
+      this.total = 0
+    },
     loadWorks () {
-      // mask
-      const mask = this.$loading({
-        lock: true,
-        text: 'Loading',
-        spinner: 'el-icon-loading',
-        background: 'rgba(255,255,255,0.7)'
-      })
+      this.clear()
+      const groupId = this.$route.query.projectId
+      if (!groupId) {
+        return
+      }
       const vue = this
-      client.queryWork().then((resp) => {
+
+      // mask
+      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+      client.queryWork(groupId).then((resp) => {
         // vue.$set('works', response.data.data)
         vue.works = resp.data
         vue.total = resp.total
@@ -79,13 +92,14 @@ export default {
       })
     },
     onCreateWork () {
-      const mask = this.$loading({
-        lock: true,
-        text: 'Creating',
-        spinner: 'el-icon-loading',
-        background: 'rgba(255,255,255,0.7)'
-      })
-      client.createWork(this.creationForm).then((response) => {
+      const groupId = this.$route.query.projectId
+      if (!groupId) {
+        this.$notify.error({ title: 'Error', message: 'Group is not specified' })
+        return
+      }
+
+      const mask = this.$loading({ lock: true, text: 'Creating', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+      client.createWork({ name: this.creationForm.name, groupId: groupId }).then(() => {
         this.loadWorks()
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '创建失败' + error })

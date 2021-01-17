@@ -27,7 +27,11 @@ export class FlywheelClient {
   }
 
   async login (form) {
-    return axios.post(this.withPath('/login'), form).then(r => r.data)
+    return axios.post(this.withPath('/v1/sessions'), form).then(r => r.data)
+  }
+
+  async logout () {
+    return axios.delete(this.withPath('/v1/sessions')).then(r => r.data)
   }
 
   async queryIdentity (form) {
@@ -55,8 +59,8 @@ export class FlywheelClient {
     return axios.put(this.withPath('/v1/works/' + id), updateData).then(r => r.data)
   }
 
-  async queryWork () {
-    return axios.get(this.withPath('/v1/works'), {})
+  async queryWork (groupId) {
+    return axios.get(this.withPath(`/v1/works?groupId=${groupId}`), {})
       .then(r => r.data)
   }
 

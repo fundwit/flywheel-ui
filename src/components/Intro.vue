@@ -9,7 +9,7 @@
             <el-input v-model="loginForm.name"></el-input>
           </el-form-item>
           <el-form-item label="密码">
-            <el-input v-model="loginForm.password"></el-input>
+            <el-input show-password v-model="loginForm.password"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onInternalSignIn">Sign In</el-button>
@@ -40,8 +40,9 @@ export default {
     onInternalSignIn () {
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Logging', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.login(this.loginForm).then(data => {
-        vue.$store.commit(statesConst.mutateSecurityContext, { principal: data })
+      client.login(this.loginForm).then(secCtx => {
+        vue.$store.commit(statesConst.mutateSecurityContext, secCtx)
+        this.$router.push({ name: 'WorkBacklog', query: { projectId: vue.$store.state.defaultGroupId } })
       }).catch(error => {
         console.log(error)
         this.$notify.error({ title: 'Error', message: 'failed to login' })

@@ -13,29 +13,34 @@ const store = new Vuex.Store({
   plugins: debug ? [createLogger] : [],
 
   state: {
+    defaultGroupId: null,
     isAuthenticated: false,
     securityContext: {
-      principal: {}
+      identity: { },
+      perms: [],
+      groupRoles: [],
+      token: null
     }
   },
-
   mutations: {
     [statesConst.mutateSecurityContext] (state, secCtx) {
-      if (!secCtx || !secCtx.principal || !secCtx.principal.id || !secCtx.principal.name) {
+      if (!secCtx || !secCtx.identity || !secCtx.identity.id || !secCtx.identity.name) {
         state.securityContext = {
-          principal: { }
+          identity: { },
+          perms: [],
+          groupRoles: [],
+          token: null
         }
         state.isAuthenticated = false
+        state.defaultGroupId = null
         return
       }
 
-      state.securityContext = {
-        principal: {
-          id: secCtx.principal.id,
-          name: secCtx.principal.name
-        }
-      }
+      state.securityContext = secCtx
       state.isAuthenticated = true
+      if (secCtx.groupRoles && secCtx.groupRoles.length > 0) {
+        state.defaultGroupId = secCtx.groupRoles[0].groupId
+      }
     }
   },
 
@@ -50,7 +55,12 @@ axios.interceptors.response.use(res => {
   return res
 }, err => {
   if (err.response.status === 401) {
-    store.commit(statesConst.mutateSecurityContext, { principal: {} })
+    store.commit(statesConst.mutateSecurityContext, {
+      identity: { },
+      perms: [],
+      groupRoles: [],
+      token: null
+    })
   }
   return Promise.reject(err)
 })
