@@ -14,7 +14,9 @@
     "core-js": "^3.6.5",
     "element-ui": "^2.14.1",
     "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "vue": "^2.6.11",
+    "vue-avatar": "^2.3.3",
     "vue-router": "^3.2.0",
     "vuedraggable": "^2.24.3",
     "vuex": "^3.4.0"

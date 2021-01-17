@@ -1,15 +1,6 @@
 <template>
   <div class="hello">
-    <el-form :inline="true" :model="creationForm" class="demo-form-inline">
-      <el-form-item label="Name">
-        <el-input v-model="creationForm.name" placeholder="Work Name"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onCreateWork">添加工作</el-button>
-      </el-form-item>
-    </el-form>
-
-    {{total}}
+    {{works ? works.length : 0}}
     <el-table
       :data="works"
       style="width: 100%">
@@ -29,7 +20,7 @@
           <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
           <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>
           <el-button v-if="scope.row.isEditing" @click="onAbortEdit(scope)" type="text" size="small">取消</el-button>
-          <el-button v-if="!scope.row.isEditing" @click="onDeleteWork(scope.row)" type="text" size="small">删除</el-button>
+          <el-button v-if="!scope.row.isEditing" @click="onDeleteWork(scope)" type="text" size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -43,70 +34,14 @@ import _ from 'lodash'
 export default {
   name: 'WorkList',
   props: {
+    works: null
   },
   data () {
     return {
-      creationForm: {
-        name: ''
-      },
-      works: [],
-      editingWork: null,
-      total: 0
-    }
-  },
-  mounted () {
-    this.loadWorks()
-  },
-  watch: {
-    $route: {
-      handler () {
-        this.loadWorks()
-      },
-      deep: true
+      editingWork: null
     }
   },
   methods: {
-    clear () {
-      this.works = []
-      this.editingWork = null
-      this.total = 0
-    },
-    loadWorks () {
-      this.clear()
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
-        return
-      }
-      const vue = this
-
-      // mask
-      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.queryWork(groupId).then((resp) => {
-        // vue.$set('works', response.data.data)
-        vue.works = resp.data
-        vue.total = resp.total
-      }).catch((error) => {
-        this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
-      }).finally(() => {
-        mask.close()
-      })
-    },
-    onCreateWork () {
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
-        this.$notify.error({ title: 'Error', message: 'Group is not specified' })
-        return
-      }
-
-      const mask = this.$loading({ lock: true, text: 'Creating', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.createWork({ name: this.creationForm.name, groupId: groupId }).then(() => {
-        this.loadWorks()
-      }).catch((error) => {
-        this.$notify.error({ title: 'Error', message: '创建失败' + error })
-      }).finally(() => {
-        mask.close()
-      })
-    },
     onEditWork (scope) {
       this.editingWork = _.cloneDeep(scope.row)
       scope.row.isEditing = true
@@ -128,6 +63,7 @@ export default {
       }
       client.updateWork(scope.row.id, changes).then(data => {
         this.abortEdit(scope, this.editingWork)
+        this.$emit('workUpdated', data)
       }).catch(error => {
         this.$notify.error({ title: 'Error', message: '更新失败' + error })
       })
@@ -140,8 +76,8 @@ export default {
       delete scope.row.isEditing
       this.$set(this.works, scope.$index, updateTo)
     },
-    onDeleteWork (row) {
-      this.$confirm('此操作将永久删除工作: "' + row.name + '", 是否继续?', '提示', {
+    onDeleteWork (scope) {
+      this.$confirm('此操作将永久删除工作: "' + scope.row.name + '", 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -153,8 +89,8 @@ export default {
           background: 'rgba(255,255,255,0.7)'
         })
 
-        client.deleteWork(row.id).then((response) => {
-          this.loadWorks()
+        client.deleteWork(scope.row.id).then((response) => {
+          this.$emit('workDeleted', scope.row)
         }).catch((error) => {
           this.$notify.error({ title: 'Error', message: '删除失败' + error })
         }).finally(() => {

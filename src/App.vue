@@ -3,7 +3,7 @@
     <div id="nav">
       <el-row>
         <el-col :span="10">
-          <a style="color: dodgerblue">FlyWheel</a>
+          <a style="color: dodgerblue"><i class="el-icon-loading"/> FlyWheel</a>
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
             <span>Project </span>
@@ -20,17 +20,17 @@
 
         <el-col :span="8">
           <span style="margin: 0 auto" v-if="$store.state.isAuthenticated">
-            <router-link :to="{ name: 'WorkBacklog', query: $route.query }">Backlog</router-link>
+            <router-link :to="{ name: 'WorkBacklog', query: $route.query }"><i class="el-icon-s-order"/> Backlog</router-link>
             <el-divider direction="vertical"/>
-            <router-link :to="{ name: 'Board', query: $route.query }">Board</router-link>
+            <router-link :to="{ name: 'Board', query: $route.query }"><i class="el-icon-data-analysis"/> Board</router-link>
           </span>
         </el-col>
 
         <el-col :span="6">
           <span style="float: right" v-if="$store.state.isAuthenticated">
-            <span>{{$store.state.securityContext.identity.name}}</span>
+            <span><i class="el-icon-user"/> {{$store.state.securityContext.identity.name}}</span>
             <el-divider direction="vertical"/>
-            <a href="javascript:void(0)" @click="onLogout">logout</a>
+            <a href="javascript:void(0)" @click="onLogout"><i class="el-icon-switch-button"/> logout</a>
           </span>
         </el-col>
       </el-row>
@@ -129,7 +129,6 @@ body {
 }
 
 #nav a {
-  font-weight: bold;
   color: #2c3e50;
   padding-right: 10px;
   display: inline-block;

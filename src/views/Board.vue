@@ -12,7 +12,21 @@
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
 
           <div class="list-group-item item" :data-state="work.stateName" :data-id="work.id" v-for="work in groupedWorks[state.name]" :key="work.name">
-            <div>{{ work.name }}</div>
+            <el-row type="flex" justify="space-between">
+              <el-col :span="20">
+                <div>
+                  <el-tag key="task" class="work-type-label" type="warning" effect="dark"><i class="el-icon-magic-stick"/>Task</el-tag>
+                  <span>{{work.id}}</span>
+                </div>
+                <div class="work-card-title">
+                  {{ work.name }}
+                </div>
+              </el-col>
+              <el-col :span="3">
+                <Avatar username="admin xx" :rounded="false"/>
+              </el-col>
+            </el-row>
+
             <div>{{ work.createTime }}</div>
           </div>
         </draggable>
@@ -25,10 +39,12 @@
 import draggable from 'vuedraggable'
 import client from '../flywheel'
 import _ from 'lodash'
+import Avatar from 'vue-avatar'
 
 export default {
   components: {
-    draggable
+    draggable,
+    Avatar
   },
   data () {
     return {
@@ -204,5 +220,20 @@ export default {
   .item+.item{
     border-top:none ;
     margin-top: 6px;
+  }
+  .work-type-label {
+    line-height: 20px;
+    height: 20px;
+    padding: 0 5px;
+    margin-right: 5px;
+  }
+  .work-card-title {
+    padding: 10px 0;
+    min-height: 3rem;
+    word-wrap:break-word;
+    word-break:break-all;
+    overflow: hidden;
+    line-height: 1.5rem;
+    color: #929191;
   }
 </style>
