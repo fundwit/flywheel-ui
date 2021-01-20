@@ -40,6 +40,7 @@ import draggable from 'vuedraggable'
 import client from '../flywheel'
 import _ from 'lodash'
 import Avatar from 'vue-avatar'
+import computeOrderChanges from '../orders'
 
 export default {
   components: {
@@ -124,6 +125,7 @@ export default {
       const fromState = event.from.getAttribute('data-state')
       this.draggedWork = this.groupedWorks[fromState][event.oldIndex]
       const vue = this
+      const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.loadAvailableTransitions(fromState).then(r => {
         const availableStates = _.flatMap(r, transition => {
           return transition.to.name
@@ -137,9 +139,37 @@ export default {
         })
       }).catch(error => {
         this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
+      }).finally(() => {
+        mask.close()
+      })
+    },
+    updateOrders (stateName, newIndex, oldIndex) {
+      const works = this.groupedWorks[stateName]
+      if (works.length <= 1) {
+        return Promise.resolve()
+      }
+
+      // compute orders
+      const workOrders = _.map(works, (work, index) => {
+        return { index: index, id: work.id, orderInState: work.orderInState }
+      })
+      const changes = computeOrderChanges(workOrders, newIndex, oldIndex)
+      if (!changes || changes.length === 0) {
+        return Promise.resolve()
+      }
+
+      const vue = this
+      return client.updateStateRangeOrders(changes).then(() => {
+        _.forEach(changes, change => {
+          works[change.index].orderInState = change.newOrder
+        })
+        vue.$set(vue.groupedWorks, stateName, works)
+      }).catch(error => {
+        this.$notify.error({ title: 'Error', message: 'failed to update index:' + error })
       })
     },
     onEnd (event) {
+      const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
       // remove dynamic class
       _.forEach(vue.states, (state, idx) => {
@@ -152,22 +182,26 @@ export default {
       const flowId = this.draggedWork.flowId
 
       if (fromState === toState) {
-        this.draggedWork = null
-        return
+        this.updateOrders(toState, event.newIndex, event.oldIndex).finally(() => {
+          this.draggedWork = null
+          mask.close()
+        })
+      } else {
+        client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
+          this.draggedWork.stateName = toState
+          return this.updateOrders(toState, event.newIndex, 9007199254740990)
+        }).catch(error => {
+          vue.groupedWorks[toState].splice(event.newIndex, 1)
+          vue.groupedWorks[fromState].splice(event.oldIndex, 0, this.draggedWork)
+          vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
+          vue.$set(vue.groupedWorks, fromState, vue.groupedWorks[fromState])
+
+          this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
+        }).finally(() => {
+          this.draggedWork = null
+          mask.close()
+        })
       }
-
-      client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
-        this.draggedWork.stateName = toState
-      }).catch(error => {
-        vue.groupedWorks[toState].splice(event.newIndex, 1)
-        vue.groupedWorks[fromState].splice(event.oldIndex, 0, this.draggedWork)
-        vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
-        vue.$set(vue.groupedWorks, fromState, vue.groupedWorks[fromState])
-
-        this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
-      }).finally(() => {
-        this.draggedWork = null
-      })
     }
   }
 }
@@ -203,7 +237,7 @@ export default {
     background-color: #F8F8F8;
   }
   .state-valid {
-    background-color: lightgreen;
+    background-color: #def8de;
   }
   .item{
     cursor: pointer;
@@ -229,7 +263,7 @@ export default {
   }
   .work-card-title {
     padding: 10px 0;
-    min-height: 3rem;
+    height: 3rem;
     word-wrap:break-word;
     word-break:break-all;
     overflow: hidden;
