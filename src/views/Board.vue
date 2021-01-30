@@ -3,11 +3,15 @@
     <div class="page-header">个人看板 工作数量 支持的工作类型</div>
     <el-row>
       <el-col :span="8" v-for="state in states" :key="state.name">
-        <div :id="'col-'+state.name" class="state-header" role="group" aria-label="Basic example">
+        <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
+          <i class="el-icon-s-order" v-if="state.category === 0"/>
+          <i class="el-icon-stopwatch" v-if="state.category === 1"/>
+          <i class="el-icon-finished" v-if="state.category === 2"/>
           {{state.name}}
         </div>
-        <draggable :id="'stack-'+state.name" :data-state="state.name" class="list-group" :class="{'state-valid': state.canTransitionTo}"
-                   :style="conHeight"
+
+        <draggable :id="'stack-'+state.name" :data-state="state.name"
+                   :class="computeStateStackStyle(state)" :style="conHeight"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
 
@@ -27,7 +31,7 @@
               </el-col>
             </el-row>
 
-            <div>{{ work.createTime }}</div>
+            <div><i class="el-icon-stopwatch"/> ... <el-divider direction="vertical"/> {{ formatTime(work.createTime) }} </div>
           </div>
         </draggable>
       </el-col>
@@ -41,6 +45,7 @@ import client from '../flywheel'
 import _ from 'lodash'
 import Avatar from 'vue-avatar'
 import computeOrderChanges from '../orders'
+import moment from 'moment'
 
 export default {
   components: {
@@ -78,8 +83,27 @@ export default {
       this.groupedWorks = {}
       this.states = []
     },
+    formatTime (time) {
+      return moment(time).fromNow(true)
+    },
     computeHeight () {
       this.conHeight.height = window.innerHeight - 200 + 'px'
+    },
+    computeStateHeaderStyle (state) {
+      return {
+        'state-header': true,
+        ['state-category-header-' + state.category]: true,
+        ['state-category-header-' + state.category]: true
+      }
+    },
+    computeStateStackStyle (state) {
+      return {
+        'state-stack': true,
+        ['state-category-stack-' + state.category]: true,
+        ['state-category-stack-' + state.category]: true,
+        'state-valid': state.canTransitionTo === true,
+        'state-invalid': state.canTransitionTo === false
+      }
     },
     loadWorkflow () {
       this.clear()
@@ -135,6 +159,9 @@ export default {
           if (_.includes(availableStates, state.name)) {
             state.canTransitionTo = true
             vue.$set(vue.states, idx, state)
+          } else {
+            state.canTransitionTo = false
+            vue.$set(vue.states, idx, state)
           }
         })
       }).catch(error => {
@@ -173,7 +200,7 @@ export default {
       const vue = this
       // remove dynamic class
       _.forEach(vue.states, (state, idx) => {
-        state.canTransitionTo = false
+        delete state.canTransitionTo
         vue.$set(vue.states, idx, state)
       })
       const fromState = event.from.getAttribute('data-state')
@@ -226,19 +253,7 @@ export default {
     outline:none !important;
     background-image:none !important;
   }
-  .state-header {
-    margin: 1em;
-    padding: 10px;
-    background-color: #F8F8F8;
-  }
-  .list-group {
-    margin: 1em;
-    padding: 10px;
-    background-color: #F8F8F8;
-  }
-  .state-valid {
-    background-color: #def8de;
-  }
+
   .item{
     cursor: pointer;
     padding: 12px;
@@ -269,5 +284,39 @@ export default {
     overflow: hidden;
     line-height: 1.5rem;
     color: #929191;
+  }
+
+  .state-valid {
+    background-color: #d6fdd6 !important;
+  }
+  .state-invalid {
+    background-color: #f8d6dc !important;
+  }
+  .state-header {
+    margin: 1em;
+    padding: 10px;
+  }
+  .state-stack {
+    margin: 1em;
+    padding: 10px;
+  }
+  .state-category-header-0 {
+    background-color: #daf3f8;
+  }
+  .state-category-header-1 {
+    background-color: #fcf7cd;
+  }
+  .state-category-header-2 {
+    background-color: #e2e2e2;
+  }
+
+  .state-category-stack-0 {
+    background-color: #daf3f8;
+  }
+  .state-category-stack-1 {
+    background-color: #fcf7cd;
+  }
+  .state-category-stack-2 {
+    background-color: #e2e2e2;
   }
 </style>
