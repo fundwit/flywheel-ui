@@ -31,7 +31,15 @@
               </el-col>
             </el-row>
 
-            <div><i class="el-icon-stopwatch"/> ... <el-divider direction="vertical"/> {{ formatTime(work.createTime) }} </div>
+            <div>
+              <i class="el-icon-stopwatch"/>
+              <span v-if="work.state.category !== 2">{{formatTimeDuration(work.stateBeginTime, null)}}</span>
+              <el-divider v-if="work.state.category !== 2" direction="vertical"/>
+
+              {{formatTimeDuration(work.processBeginTime, work.processEndTime)}}
+              <el-divider direction="vertical"/>
+              {{ formatTime(work.createTime) }}
+            </div>
           </div>
         </draggable>
       </el-col>
@@ -85,6 +93,16 @@ export default {
     },
     formatTime (time) {
       return moment(time).fromNow(true)
+    },
+    formatTimeDuration (begin, end) {
+      if (!begin) {
+        return '-'
+      }
+      if (!end) {
+        return moment(begin).fromNow(true) + '+'
+      } else {
+        return moment(begin).from(end, true)
+      }
     },
     computeHeight () {
       this.conHeight.height = window.innerHeight - 200 + 'px'
@@ -216,6 +234,7 @@ export default {
       } else {
         client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
           this.draggedWork.stateName = toState
+          vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
           return this.updateOrders(toState, event.newIndex, 9007199254740990)
         }).catch(error => {
           vue.groupedWorks[toState].splice(event.newIndex, 1)
