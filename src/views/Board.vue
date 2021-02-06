@@ -1,8 +1,22 @@
 <template>
   <div>
     <div class="page-header">个人看板 工作数量 支持的工作类型</div>
-    <el-row>
-      <el-col :span="8" v-for="state in states" :key="state.name">
+
+<!--    <el-drawer title="我是标题" :visible.sync="drawer" :destroy-on-close="true" :show-close="false" size="80%" :with-header="false" direction="rtl" :before-close="onCloseDetail">-->
+<!--      <div>-->
+<!--        <work-detail/>-->
+<!--      </div>-->
+<!--    </el-drawer>-->
+
+    <el-dialog v-if="workDetail" :show-close="false"
+      :visible="true"
+      width="60%"
+      :before-close="onCloseDetail">
+      <work-detail :work-id="workDetail.id"/>
+    </el-dialog>
+
+    <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap;">
+      <div v-for="state in states" :key="state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
           <i class="el-icon-s-order" v-if="state.category === 0"/>
           <i class="el-icon-stopwatch" v-if="state.category === 1"/>
@@ -10,19 +24,18 @@
           {{state.name}}
         </div>
 
-        <draggable :id="'stack-'+state.name" :data-state="state.name"
+        <draggable :id="'stack-'+state.name" :data-state="state.name" handle=".drag-handler"
                    :class="computeStateStackStyle(state)" :style="conHeight"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
-
           <div class="list-group-item item" :data-state="work.stateName" :data-id="work.id" v-for="work in groupedWorks[state.name]" :key="work.name">
             <el-row type="flex" justify="space-between">
               <el-col :span="20">
-                <div>
+                <div class="drag-handler">
                   <el-tag key="task" class="work-type-label" type="warning" effect="dark"><i class="el-icon-magic-stick"/>Task</el-tag>
                   <span>{{work.id}}</span>
                 </div>
-                <div class="work-card-title">
+                <div @click="onWorkDetail(work)" class="work-card-title">
                   {{ work.name }}
                 </div>
               </el-col>
@@ -33,17 +46,15 @@
 
             <div>
               <i class="el-icon-stopwatch"/>
-              <span v-if="work.state.category !== 2">{{formatTimeDuration(work.stateBeginTime, null)}}</span>
-              <el-divider v-if="work.state.category !== 2" direction="vertical"/>
-
+              <span v-if="work.state.category !== 2">{{formatTimeDuration(work.stateBeginTime, null)}} | </span>
               {{formatTimeDuration(work.processBeginTime, work.processEndTime)}}
-              <el-divider direction="vertical"/>
+              |
               {{ formatTime(work.createTime) }}
             </div>
           </div>
         </draggable>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,12 +64,14 @@ import client from '../flywheel'
 import _ from 'lodash'
 import Avatar from 'vue-avatar'
 import computeOrderChanges from '../orders'
-import moment from 'moment'
+import { formatTime, formatTimeDuration } from '../times'
+import WorkDetail from '../components/WorkDetail'
 
 export default {
   components: {
     draggable,
-    Avatar
+    Avatar,
+    WorkDetail
   },
   data () {
     return {
@@ -67,7 +80,9 @@ export default {
       states: [],
       conHeight: {
         height: ''
-      }
+      },
+      // drawer: false,
+      workDetail: null
     }
   },
   created () {
@@ -86,23 +101,12 @@ export default {
     }
   },
   methods: {
+    formatTime: formatTime,
+    formatTimeDuration: formatTimeDuration,
     clear () {
       this.draggedWork = null
       this.groupedWorks = {}
       this.states = []
-    },
-    formatTime (time) {
-      return moment(time).fromNow(true)
-    },
-    formatTimeDuration (begin, end) {
-      if (!begin) {
-        return '-'
-      }
-      if (!end) {
-        return moment(begin).fromNow(true) + '+'
-      } else {
-        return moment(begin).from(end, true)
-      }
     },
     computeHeight () {
       this.conHeight.height = window.innerHeight - 200 + 'px'
@@ -248,6 +252,14 @@ export default {
           mask.close()
         })
       }
+    },
+    onWorkDetail (work) {
+      // this.drawer = true
+      this.workDetail = work
+    },
+    onCloseDetail () {
+      // this.drawer = false
+      this.workDetail = null
     }
   }
 }
@@ -257,7 +269,9 @@ export default {
     padding: 10px;
     border-bottom: 1px solid #EEEEEE;
   }
-
+  .drag-handler {
+    cursor: move;
+  }
   .ghostClass{
     background-color:  blue !important;
   }
@@ -274,7 +288,6 @@ export default {
   }
 
   .item{
-    cursor: pointer;
     padding: 12px;
     margin-bottom: 15px;
     border:  solid 1px #eee;

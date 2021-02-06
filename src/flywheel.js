@@ -59,6 +59,11 @@ export class FlywheelClient {
     return axios.put(this.withPath('/v1/works/' + id), updateData).then(r => r.data)
   }
 
+  async detailWork (id) {
+    return axios.get(this.withPath(`/v1/works/${id}`), {})
+      .then(r => r.data)
+  }
+
   async queryWork (groupId) {
     return axios.get(this.withPath(`/v1/works?groupId=${groupId}`), {})
       .then(r => r.data)
@@ -70,6 +75,11 @@ export class FlywheelClient {
 
   async updateStateRangeOrders (orderUpdating) {
     return axios.put(this.withPath('/v1/work-orders'), orderUpdating).then(r => r.data)
+  }
+
+  async queryWorkProcessSteps (workId) {
+    return axios.get(this.withPath(`/v1/work-process-steps?workId=${workId}`), {})
+      .then(r => r.data)
   }
 }
 

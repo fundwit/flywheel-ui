@@ -6,7 +6,7 @@
           <a style="color: dodgerblue"><i class="el-icon-loading"/> FlyWheel</a>
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
-            <span>Project </span>
+            <span> <i class="el-icon-folder-opened"/> Project </span>
             <el-select size="mini" :value="$route.query.projectId" @change="onCurrentProjectChange">
               <el-option
                 v-for="item in $store.state.securityContext.groupRoles"
