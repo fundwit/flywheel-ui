@@ -38,6 +38,16 @@ export class FlywheelClient {
     return axios.get(this.withPath('/me'), form).then(r => r.data)
   }
 
+  async queryWorkflows (groupId) {
+    return axios.get(this.withPath(`/v1/workflows?groupId=${groupId}`), {})
+      .then(r => r.data)
+  }
+
+  async detailWorkflow (id) {
+    return axios.get(this.withPath(`/v1/workflows/${id}`), {})
+      .then(r => r.data)
+  }
+
   async loadStates () {
     return axios.get(this.withPath('/v1/workflows/1/states')).then(r => r.data)
   }

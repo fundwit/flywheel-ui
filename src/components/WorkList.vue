@@ -1,9 +1,7 @@
 <template>
   <div class="hello">
     {{works ? works.length : 0}}
-    <el-table
-      :data="works"
-      style="width: 100%">
+    <el-table :data="works" style="width: 100%">
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
           <span v-if="!scope.row.isEditing">{{ scope.row.name }}</span>
@@ -14,8 +12,7 @@
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180">
       </el-table-column>
-      <el-table-column
-        prop="action" label="操作">
+      <el-table-column prop="action" label="操作">
         <template slot-scope="scope">
           <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
           <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>

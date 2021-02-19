@@ -23,6 +23,8 @@
             <router-link :to="{ name: 'WorkBacklog', query: $route.query }"><i class="el-icon-s-order"/> Backlog</router-link>
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'Board', query: $route.query }"><i class="el-icon-data-analysis"/> Board</router-link>
+            <el-divider direction="vertical"/>
+            <router-link :to="{ name: 'WorkflowList', query: $route.query }"><i class="el-icon-share"/> Workflows</router-link>
           </span>
         </el-col>
 
@@ -38,7 +40,7 @@
 
     <Intro v-if="!$store.state.isAuthenticated && !isLoading"/>
     <GroupGuide v-if="$store.state.isAuthenticated && (!$store.state.securityContext.groupRoles || $store.state.securityContext.groupRoles.length === 0)"/>
-    <router-view :class="{hidden: !$store.state.isAuthenticated || !$route.query.projectId}"/>
+    <router-view :class="{hidden: !$store.state.isAuthenticated }"/>
   </div>
 </template>
 
