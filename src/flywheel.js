@@ -4,6 +4,12 @@ import adapter from 'axios/lib/adapters/http'
 axios.defaults.adapter = adapter
 axios.defaults.withCredentials = true
 
+export const stateCategories = [
+  { id: 0, name: 'InBacklog' },
+  { id: 1, name: 'InProcess' },
+  { id: 2, name: 'Done' }
+]
+
 export class FlywheelClient {
   constructor (url) {
     if (url === undefined || url === '') {
@@ -46,6 +52,10 @@ export class FlywheelClient {
   async detailWorkflow (id) {
     return axios.get(this.withPath(`/v1/workflows/${id}`), {})
       .then(r => r.data)
+  }
+
+  async createWorkflow (creationForm) {
+    return axios.post(this.withPath('/v1/workflows'), creationForm).then(r => r.data)
   }
 
   async loadStates () {
@@ -93,4 +103,5 @@ export class FlywheelClient {
   }
 }
 
-export default new FlywheelClient('/api')
+export const client = new FlywheelClient('/api')
+export default client

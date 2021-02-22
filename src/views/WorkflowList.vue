@@ -1,5 +1,6 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
+    <el-button type="primary" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">添加工作流</el-button>
     <el-table :data="workflows" style="width: 100%">
       <el-table-column prop="id" label="ID" width="180">
       </el-table-column>
@@ -16,24 +17,44 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog v-if="showCreatingDialog === true" title="Create Workflow" :visible="true" width="80%"
+               :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+      <workflow-creating-form :selectedProjectId="$route.query.projectId" @creating-result="onCreatingResult"/>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
 import client from '../flywheel'
+import WorkflowCreatingForm from '../components/WorkflowCreatingForm'
 
 export default {
   name: 'WorkflowList',
+  components: {
+    WorkflowCreatingForm
+  },
+
   data () {
     return {
       total: 0,
-      workflows: []
+      workflows: [],
+      showCreatingDialog: false
     }
   },
   mounted () {
     this.loadWorkflows()
   },
   methods: {
+    onCreateWorkflowDialog () {
+      this.showCreatingDialog = true
+    },
+    onCreatingResult (result) {
+      this.showCreatingDialog = false
+      if (result) {
+        this.loadWorkflows()
+      }
+    },
     mapStateCategory (category) {
       if (category === 0) {
         return {
@@ -49,8 +70,11 @@ export default {
         }
       }
     },
+    selectedProjectId () {
+      return this.$route.query.projectId
+    },
     loadWorkflows () {
-      const groupId = this.$route.query.projectId
+      const groupId = this.selectedProjectId()
       if (!groupId) {
         return
       }
@@ -72,5 +96,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
