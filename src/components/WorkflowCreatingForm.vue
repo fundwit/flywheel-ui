@@ -113,7 +113,6 @@ export default {
       this.$emit('creating-result', null)
     },
     buildFullTransitions (states) {
-      debugger
       const fullTransitions = []
       states.forEach(fromState => {
         states.forEach(toState => {

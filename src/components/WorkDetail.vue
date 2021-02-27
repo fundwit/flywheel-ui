@@ -140,7 +140,7 @@ export default {
             isCurrentStep: step.isCurrentStep === true
           }
         })
-        return client.loadStates().then(states => {
+        return client.loadStates(val.flowId).then(states => {
           _.forEach(states, rowData => {
             const stepsInState = _.filter(vue.processTraceTableHeaders, h => h.state === rowData.name)
             _.forEach(stepsInState, step => {

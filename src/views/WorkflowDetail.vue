@@ -1,6 +1,6 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
-    <div>{{id}} {{workflow.name}}</div>
+    <div>{{id}} <span v-if="workflow">{{workflow.name}}</span></div>
     <el-divider style="margin: 0"/>
     <div>state machine</div>
 

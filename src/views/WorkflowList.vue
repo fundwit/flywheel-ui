@@ -11,9 +11,7 @@
       </el-table-column>
       <el-table-column label="States">
         <template slot-scope="scope">
-          <el-tag v-for="state in scope.row.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style" effect="dark">
-            {{ state.name }}
-          </el-tag>
+          <WorkflowStates :workflow-id="scope.row.id"/>
         </template>
       </el-table-column>
     </el-table>
@@ -28,11 +26,13 @@
 <script>
 import client from '../flywheel'
 import WorkflowCreatingForm from '../components/WorkflowCreatingForm'
+import WorkflowStates from '../components/workflow/WorkflowStates'
 
 export default {
   name: 'WorkflowList',
   components: {
-    WorkflowCreatingForm
+    WorkflowCreatingForm,
+    WorkflowStates
   },
 
   data () {
@@ -55,21 +55,6 @@ export default {
         this.loadWorkflows()
       }
     },
-    mapStateCategory (category) {
-      if (category === 0) {
-        return {
-          style: ''
-        }
-      } else if (category === 1) {
-        return {
-          style: 'warning'
-        }
-      } else if (category === 2) {
-        return {
-          style: 'info'
-        }
-      }
-    },
     selectedProjectId () {
       return this.$route.query.projectId
     },
@@ -79,8 +64,6 @@ export default {
         return
       }
       const vue = this
-
-      // mask
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.queryWorkflows(groupId).then((resp) => {
         vue.total = resp.length

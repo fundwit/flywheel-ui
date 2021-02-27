@@ -90,12 +90,12 @@ export default {
     this.computeHeight()
   },
   mounted () {
-    this.loadWorkflow()
+    this.loadBoardData()
   },
   watch: {
     $route: {
       handler () {
-        this.loadWorkflow()
+        this.loadBoardData()
       },
       deep: true
     }
@@ -107,6 +107,21 @@ export default {
       this.draggedWork = null
       this.groupedWorks = {}
       this.states = []
+    },
+    loadBoardData () {
+      this.clear()
+
+      const groupId = this.$route.query.projectId
+      if (!groupId) {
+        return
+      }
+
+      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+      this.loadWorksAndStates(groupId).catch((error) => {
+        this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
+      }).finally(() => {
+        mask.close()
+      })
     },
     computeHeight () {
       this.conHeight.height = window.innerHeight - 200 + 'px'
@@ -127,52 +142,45 @@ export default {
         'state-invalid': state.canTransitionTo === false
       }
     },
-    loadWorkflow () {
-      this.clear()
-
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
-        return
-      }
-
-      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+    loadWorksAndStates (groupId) {
       const vue = this
-      client.loadStates().then((resp) => {
-        vue.states = resp
-        _.forEach(vue.states, (state, idx) => {
-          vue.$set(vue.groupedWorks, state.name, [])
-        })
-        mask.close()
-        vue.loadWorks()
-      }).catch((error) => {
-        mask.close()
-        this.$notify.error({ title: 'Error', message: 'failed to load workflow: ' + error })
-      })
-    },
-    loadWorks () {
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
-        return
-      }
-      const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      const vue = this
-      client.queryWork(groupId).then((resp) => {
+      return client.queryWork(groupId).then((resp) => {
         const groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
-        _.forEach(groupedWorks, (works, stateName) => {
-          vue.$set(vue.groupedWorks, stateName, works)
+        const workflowIds = {}
+        _.forEach(resp.data, v => {
+          workflowIds[v.flowId] = v.flowId
         })
-      }).catch((error) => {
-        this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
-      }).finally(() => {
-        mask.close()
+
+        const workflowRequest = []
+        _.forEach(workflowIds, key => {
+          workflowRequest.push(client.loadStates(key))
+        })
+
+        Promise.all(workflowRequest).then((statesList) => {
+          const aggregatedStates = []
+          _.forEach(statesList, states => {
+            _.forEach(states, state => {
+              aggregatedStates.push(state)
+            })
+          })
+
+          vue.states = aggregatedStates
+          _.forEach(vue.states, (state) => {
+            vue.$set(vue.groupedWorks, state.name, [])
+          })
+          _.forEach(groupedWorks, (works, stateName) => {
+            vue.$set(vue.groupedWorks, stateName, works)
+          })
+        })
       })
     },
+
     onStart (event) {
       const fromState = event.from.getAttribute('data-state')
       this.draggedWork = this.groupedWorks[fromState][event.oldIndex]
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.loadAvailableTransitions(fromState).then(r => {
+      client.loadAvailableTransitions(this.draggedWork.flowId, fromState).then(r => {
         const availableStates = _.flatMap(r, transition => {
           return transition.to.name
         })
