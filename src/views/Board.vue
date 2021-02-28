@@ -8,14 +8,11 @@
 <!--      </div>-->
 <!--    </el-drawer>-->
 
-    <el-dialog v-if="workDetail" :show-close="false"
-      :visible="true"
-      width="60%"
-      :before-close="onCloseDetail">
-      <work-detail :work-id="workDetail.id"/>
+    <el-dialog v-if="workDetail" :show-close="false" :visible="true" width="60%" :before-close="onCloseDetail">
+      <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted"/>
     </el-dialog>
 
-    <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap;">
+    <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
       <div v-for="state in states" :key="state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
           <i class="el-icon-s-order" v-if="state.category === 0"/>
@@ -79,7 +76,7 @@ export default {
       groupedWorks: {},
       states: [],
       conHeight: {
-        height: ''
+        minHeight: ''
       },
       // drawer: false,
       workDetail: null
@@ -124,7 +121,7 @@ export default {
       })
     },
     computeHeight () {
-      this.conHeight.height = window.innerHeight - 200 + 'px'
+      this.conHeight.minHeight = window.innerHeight - 200 + 'px'
     },
     computeStateHeaderStyle (state) {
       return {
@@ -163,8 +160,8 @@ export default {
               aggregatedStates.push(state)
             })
           })
+          vue.states = _.orderBy(aggregatedStates, ['category'], ['asc'])
 
-          vue.states = aggregatedStates
           _.forEach(vue.states, (state) => {
             vue.$set(vue.groupedWorks, state.name, [])
           })
@@ -268,6 +265,12 @@ export default {
     onCloseDetail () {
       // this.drawer = false
       this.workDetail = null
+    },
+    onWorkDeleted (val) {
+      if (val) {
+        this.onCloseDetail()
+        this.loadBoardData()
+      }
     }
   }
 }
@@ -339,6 +342,7 @@ export default {
   .state-stack {
     margin: 1em;
     padding: 10px;
+    width: 300px;
   }
   .state-category-header-0 {
     background-color: #daf3f8;

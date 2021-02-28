@@ -45,6 +45,14 @@ export default {
   mounted () {
     this.loadWorkflows()
   },
+  watch: {
+    $route: {
+      handler () {
+        this.loadWorkflows()
+      },
+      deep: true
+    }
+  },
   methods: {
     onCreateWorkflowDialog () {
       this.showCreatingDialog = true

@@ -17,7 +17,7 @@
           <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
           <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>
           <el-button v-if="scope.row.isEditing" @click="onAbortEdit(scope)" type="text" size="small">取消</el-button>
-          <el-button v-if="!scope.row.isEditing" @click="onDeleteWork(scope)" type="text" size="small">删除</el-button>
+          <work-delete v-if="!scope.row.isEditing" :work="scope.row" @workDeleted="onWorkDeleted"/>
         </template>
       </el-table-column>
     </el-table>
@@ -27,11 +27,15 @@
 <script>
 import client from '../flywheel'
 import _ from 'lodash'
+import WorkDelete from './work/WorkDelete'
 
 export default {
   name: 'WorkList',
   props: {
     works: null
+  },
+  components: {
+    WorkDelete
   },
   data () {
     return {
@@ -73,29 +77,8 @@ export default {
       delete scope.row.isEditing
       this.$set(this.works, scope.$index, updateTo)
     },
-    onDeleteWork (scope) {
-      this.$confirm('此操作将永久删除工作: "' + scope.row.name + '", 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        const mask = this.$loading({
-          lock: true,
-          text: 'deleting',
-          spinner: 'el-icon-loading',
-          background: 'rgba(255,255,255,0.7)'
-        })
-
-        client.deleteWork(scope.row.id).then((response) => {
-          this.$emit('workDeleted', scope.row)
-        }).catch((error) => {
-          this.$notify.error({ title: 'Error', message: '删除失败' + error })
-        }).finally(() => {
-          mask.close()
-        })
-      }).catch(() => {
-        this.$message({ type: 'info', message: '已取消删除' })
-      })
+    onWorkDeleted (val) {
+      this.$emit('workDeleted', val)
     }
   }
 }

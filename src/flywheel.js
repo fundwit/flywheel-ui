@@ -89,6 +89,11 @@ export class FlywheelClient {
       .then(r => r.data)
   }
 
+  async queryBacklog (groupId) {
+    return axios.get(this.withPath(`/v1/works?groupId=${groupId}&stateCategory=0&stateCategory=1`), {})
+      .then(r => r.data)
+  }
+
   async deleteWork (id) {
     return axios.delete(this.withPath('/v1/works/' + id), {})
   }

@@ -5,6 +5,10 @@
       </div>
 
       <div v-if="work" id="work-detail">
+        <div id="work-detail-actions" style="margin-bottom: 10px">
+          <work-delete :work="work" @workDeleted="onWorkDeleted"/>
+        </div>
+
         <div id="work-detail-header" style="background-color: #fde402; border-bottom: lightgray solid 0px; display: flex; display: -webkit-flex; flex-wrap: nowrap;">
           <div style="display: none; background-color: transparent; padding: 10px;"></div>
           <div style="display: none; width: 0; height: 0; border-width: 20px; border-style: solid; border-color: transparent transparent transparent red;"></div>
@@ -92,11 +96,15 @@
 import client from '../flywheel'
 import _ from 'lodash'
 import { formatTime, formatTimeDuration } from '../times'
+import WorkDelete from './work/WorkDelete'
 
 export default {
   name: 'WorkDetail',
   props: {
     workId: null
+  },
+  components: {
+    WorkDelete
   },
   data () {
     return {
@@ -110,7 +118,10 @@ export default {
   },
   methods: {
     formatTime: formatTime,
-    formatTimeDuration: formatTimeDuration
+    formatTimeDuration: formatTimeDuration,
+    onWorkDeleted (val) {
+      this.$emit('workDeleted', val)
+    }
   },
   watch: {
     work (val) {
