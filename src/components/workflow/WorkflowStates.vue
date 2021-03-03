@@ -3,7 +3,7 @@
     <div v-if="isLoading">Loading...</div>
     <div v-if="loadingError" style="color: red">{{ loadingError }}</div>
     <div v-if="workflowDetail">
-      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style" effect="dark">
+      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style" size="small" effect="dark">
         {{ state.name }}
       </el-tag>
     </div>

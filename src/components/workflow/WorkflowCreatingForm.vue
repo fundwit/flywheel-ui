@@ -4,6 +4,17 @@
       <el-form-item label="Name">
         <el-input v-model="creatingWorkflow.name" placeholder="input the name of this workflow"></el-input>
       </el-form-item>
+      <el-form-item label="Color">
+        <el-color-picker v-model="creatingWorkflow.themeColor" size="small"/>
+      </el-form-item>
+      <el-form-item label="Icon">
+        <el-radio-group :fill="creatingWorkflow.themeColor" v-model="creatingWorkflow.themeIcon" size="small">
+          <el-radio-button label="el-icon-s-opportunity"><i class="el-icon-s-opportunity"/></el-radio-button>
+          <el-radio-button label="el-icon-s-help"><i class="el-icon-s-help"/></el-radio-button>
+          <el-radio-button label="el-icon-message-solid"><i class="el-icon-message-solid"/></el-radio-button>
+          <el-radio-button label="el-icon-s-flag"><i class="el-icon-s-flag"/></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="Project">
         <el-select disabled v-model="creatingWorkflow.groupId" placeholder="select the project which this workflow is belong to">
           <el-option v-for="item in $store.state.securityContext.groupRoles"
@@ -65,7 +76,8 @@
 </template>
 
 <script>
-import { client, stateCategories } from '../flywheel'
+import { client, stateCategories } from '../../flywheel'
+import { randomColor } from '../../colors'
 
 export default {
   name: 'WorkflowCreatingForm',
@@ -77,7 +89,9 @@ export default {
       stateCategories: stateCategories,
       creatingWorkflow: {
         name: '',
-        groupId: this.selectedProjectId
+        groupId: this.selectedProjectId,
+        themeColor: randomColor(),
+        themeIcon: ''
       },
       states: [],
       transitions: [],
@@ -134,6 +148,8 @@ export default {
       client.createWorkflow({
         name: this.creatingWorkflow.name,
         groupId: this.creatingWorkflow.groupId,
+        themeColor: this.creatingWorkflow.themeColor,
+        themeIcon: this.creatingWorkflow.themeIcon ? this.creatingWorkflow.themeIcon : 'el-icon-s-opportunity',
         stateMachine: {
           states: this.states,
           transitions: this.buildFullTransitions(this.states)

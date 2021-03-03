@@ -29,7 +29,10 @@
             <el-row type="flex" justify="space-between">
               <el-col :span="20">
                 <div class="drag-handler">
-                  <el-tag key="task" class="work-type-label" type="warning" effect="dark"><i class="el-icon-magic-stick"/>Task</el-tag>
+                  <el-tag key="task" class="work-type-label" :style="{ backgroundColor: workflowIndex[work.flowId].themeColor }" effect="dark">
+                    <i :class="workflowIndex[work.flowId].themeIcon"/>
+                    {{workflowIndex[work.flowId].name}}
+                  </el-tag>
                   <span>{{work.id}}</span>
                 </div>
                 <div @click="onWorkDetail(work)" class="work-card-title">
@@ -75,6 +78,7 @@ export default {
       draggedWork: null,
       groupedWorks: {},
       states: [],
+      workflowIndex: {},
       conHeight: {
         minHeight: ''
       },
@@ -104,6 +108,7 @@ export default {
       this.draggedWork = null
       this.groupedWorks = {}
       this.states = []
+      this.workflowIndex = {}
     },
     loadBoardData () {
       this.clear()
@@ -150,16 +155,19 @@ export default {
 
         const workflowRequest = []
         _.forEach(workflowIds, key => {
-          workflowRequest.push(client.loadStates(key))
+          workflowRequest.push(client.detailWorkflow(key))
         })
 
-        Promise.all(workflowRequest).then((statesList) => {
+        Promise.all(workflowRequest).then(workflowList => {
           const aggregatedStates = []
-          _.forEach(statesList, states => {
-            _.forEach(states, state => {
+          const workflowIndex = {}
+          _.forEach(workflowList, workflow => {
+            workflowIndex[workflow.id] = workflow
+            _.forEach(workflow.stateMachine.states, state => {
               aggregatedStates.push(state)
             })
           })
+          vue.workflowIndex = workflowIndex
           vue.states = _.orderBy(aggregatedStates, ['category'], ['asc'])
 
           _.forEach(vue.states, (state) => {
@@ -315,7 +323,7 @@ export default {
   }
   .work-type-label {
     line-height: 20px;
-    height: 20px;
+    height: 24px;
     padding: 0 5px;
     margin-right: 5px;
   }

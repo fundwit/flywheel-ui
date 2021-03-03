@@ -1,7 +1,6 @@
 <template>
   <div class="page">
     <el-card class="box-card">
-      {{total}}
       <div >
         <el-form :inline="true" :model="creationForm" class="demo-form-inline">
           <el-form-item label="Name">
@@ -21,7 +20,7 @@
     </el-card>
 
     <el-card class="box-card">
-      <WorkList :works="works" @workUpdated="workUpdated" @workDeleted="workDeleted" />
+      <WorkList :works="works" :workflowIndex="workflowIndex" @workUpdated="workUpdated" @workDeleted="workDeleted" />
     </el-card>
   </div>
 </template>
@@ -45,6 +44,7 @@ export default {
         workflow: {}
       },
       works: [],
+      workflowIndex: {},
       total: 0
     }
   },
@@ -90,6 +90,7 @@ export default {
     },
     clear () {
       this.works = []
+      this.workflowIndex = {}
       this.total = 0
     },
     loadWorks () {
@@ -101,7 +102,12 @@ export default {
       const vue = this
 
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.queryBacklog(groupId).then((resp) => {
+      client.queryWorkflows(groupId).then(resp => {
+        _.forEach(resp, workflow => {
+          vue.workflowIndex[workflow.id] = workflow
+        })
+        return client.queryBacklog(groupId)
+      }).then((resp) => {
         vue.total = resp.total
         vue.works = resp.data // vue.$set('works', response.data.data)
       }).catch((error) => {

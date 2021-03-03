@@ -12,7 +12,14 @@
         <div id="work-detail-header" style="background-color: #fde402; border-bottom: lightgray solid 0px; display: flex; display: -webkit-flex; flex-wrap: nowrap;">
           <div style="display: none; background-color: transparent; padding: 10px;"></div>
           <div style="display: none; width: 0; height: 0; border-width: 20px; border-style: solid; border-color: transparent transparent transparent red;"></div>
-          <div style="padding: 10px; font-size: 1.0rem"><i class="el-icon-magic-stick"/> #{{work.id}} {{work.name}}</div>
+          <div style="padding: 10px; font-size: 1.0rem">
+            <el-tag v-if="workflow" size="small" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
+              <i :class="workflow.themeIcon ? workflow.themeIcon : 'el-icon-s-claim'"/>
+              {{workflow.name}}
+            </el-tag>
+            <span> #{{work.id}}</span>
+            <span> {{work.name}}</span>
+          </div>
         </div>
 
         <div id="work-detail-body">
@@ -109,6 +116,7 @@ export default {
   data () {
     return {
       work: null,
+      workflow: null,
       workProcessSteps: [],
       processTraceTableData: [],
       processTraceTableHeaders: [],
@@ -151,8 +159,8 @@ export default {
             isCurrentStep: step.isCurrentStep === true
           }
         })
-        return client.loadStates(val.flowId).then(states => {
-          _.forEach(states, rowData => {
+        return client.detailWorkflow(val.flowId).then(detail => {
+          _.forEach(detail.stateMachine.states, rowData => {
             const stepsInState = _.filter(vue.processTraceTableHeaders, h => h.state === rowData.name)
             _.forEach(stepsInState, step => {
               rowData[step.timeRange] = step.timeRange
@@ -161,7 +169,7 @@ export default {
               }
             })
           })
-          vue.processTraceTableData = states
+          vue.processTraceTableData = detail.states
         })
       }).catch((error) => {
         vue.workProcessStepsLoadingError = 'failed to load work process details'
@@ -181,8 +189,11 @@ export default {
     const mask = this.$loading({ lock: true, text: 'requesting', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
     client.detailWork(this.workId).then((resp) => {
       vue.work = resp
+      return client.detailWorkflow(vue.work.flowId)
+    }).then(resp => {
+      vue.workflow = resp
     }).catch((error) => {
-      vue.$notify.error({ title: 'Error', message: 'failed to load workflow: ' + error })
+      vue.$notify.error({ title: 'Error', message: 'failed to load work and workflow: ' + error })
     }).finally(() => {
       mask.close()
     })

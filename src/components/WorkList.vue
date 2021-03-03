@@ -2,6 +2,14 @@
   <div class="hello">
     {{works ? works.length : 0}}
     <el-table :data="works" style="width: 100%">
+      <el-table-column width="80px">
+        <template slot-scope="scope">
+          <el-tag size="small" :style="{ backgroundColor: workflowIndex[scope.row.flowId].themeColor }" effect="dark">
+            <i :class="workflowIndex[scope.row.flowId].themeIcon ? workflowIndex[scope.row.flowId].themeIcon : 'el-icon-s-claim'"/>
+            {{workflowIndex[scope.row.flowId].name}}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
           <span v-if="!scope.row.isEditing">{{ scope.row.name }}</span>
@@ -32,7 +40,8 @@ import WorkDelete from './work/WorkDelete'
 export default {
   name: 'WorkList',
   props: {
-    works: null
+    works: null,
+    workflowIndex: null
   },
   components: {
     WorkDelete

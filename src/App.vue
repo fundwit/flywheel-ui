@@ -139,4 +139,9 @@ body {
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+.el-tag{
+  border-width: 0 !important;
+  border-radius: 0 !important;
+  line-height: 26px !important;
+}
 </style>
