@@ -6,32 +6,32 @@
 import { client } from '../../flywheel'
 
 export default {
-  name: 'WorkDelete',
+  name: 'WorkflowDelete',
   props: {
-    work: null
+    workflow: null
   },
   methods: {
     onDeleteConfirm () {
       const vue = this
       const deleteOutput = {}
-      this.$prompt(`work "${this.work.name}" will be deleted. deletion action is unrecoverable, input "DELETE" to confirm.`, 'Delete Confirm', {
+      this.$prompt(`workflow "${this.workflow.name}" will be deleted. deletion action is unrecoverable, input "DELETE" to confirm.`, 'Delete Confirm', {
         confirmButtonText: 'Submit',
         cancelButtonText: 'Cancel',
         inputPattern: /DELETE/,
         inputErrorMessage: 'invalid input'
       }).then(({ value }) => {
         if (value === 'DELETE') {
-          return client.deleteWork(this.work.id).then(resp => {
+          return client.deleteWorkflow(this.workflow.id).then(resp => {
             vue.$message({ type: 'success', message: 'delete success' })
             deleteOutput.result = true
           }).catch(err => {
-            vue.$message({ type: 'error', message: 'delete failed: ' + err })
+            vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
           })
         }
       }).catch(() => {
       }).finally(() => {
         if (deleteOutput.result) {
-          vue.$emit('workDeleted', vue.work)
+          vue.$emit('workflowDeleted', vue.workflow)
         }
       })
     }

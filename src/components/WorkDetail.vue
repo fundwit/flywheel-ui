@@ -169,7 +169,7 @@ export default {
               }
             })
           })
-          vue.processTraceTableData = detail.states
+          vue.processTraceTableData = detail.stateMachine.states
         })
       }).catch((error) => {
         vue.workProcessStepsLoadingError = 'failed to load work process details'

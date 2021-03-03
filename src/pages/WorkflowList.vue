@@ -22,6 +22,7 @@
       <el-table-column label="Actions">
         <template slot-scope="scope">
           <el-button @click="onEditWorkflow(scope)" type="text" size="small">编辑</el-button>
+          <workflow-delete v-if="!scope.row.isEditing" :workflow="scope.row" @workflowDeleted="onWorkflowDeleted"/>
         </template>
       </el-table-column>
     </el-table>
@@ -37,12 +38,13 @@
 import client from '../flywheel'
 import WorkflowCreatingForm from '../components/workflow/WorkflowCreatingForm'
 import WorkflowStates from '../components/workflow/WorkflowStates'
-
+import WorkflowDelete from '../components/workflow/WorkflowDelete'
 export default {
   name: 'WorkflowList',
   components: {
     WorkflowCreatingForm,
-    WorkflowStates
+    WorkflowStates,
+    WorkflowDelete
   },
 
   data () {
@@ -69,6 +71,10 @@ export default {
     },
     onEditWorkflow (scope) {
       console.log(scope.row.name)
+    },
+    onWorkflowDeleted (deletedWorkflow) {
+      console.log('deleted workflow ' + deletedWorkflow.id)
+      this.loadWorkflows()
     },
     onCreatingResult (result) {
       this.showCreatingDialog = false

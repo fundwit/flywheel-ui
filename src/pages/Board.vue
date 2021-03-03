@@ -146,7 +146,7 @@ export default {
     },
     loadWorksAndStates (groupId) {
       const vue = this
-      return client.queryWork(groupId).then((resp) => {
+      return client.queryWorks(groupId).then((resp) => {
         const groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
         const workflowIds = {}
         _.forEach(resp.data, v => {

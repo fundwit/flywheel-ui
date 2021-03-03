@@ -1,9 +1,11 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
+    <div>
+      <workflow-delete v-if="workflow" :workflow="workflow" @workflowDeleted="onWorkflowDeleted"/>
+    </div>
     <div>{{id}} <span v-if="workflow">{{workflow.name}}</span></div>
     <el-divider style="margin: 0"/>
     <div>state machine</div>
-
     <el-table v-if="workflow && workflow.stateMachine" :data="workflow.stateMachine.states" style="width: 100%">
       <el-table-column label="states" width="180">
         <template slot-scope="scope">
@@ -47,9 +49,12 @@
 <script>
 import _ from 'lodash'
 import client from '../flywheel'
-
+import WorkflowDelete from '../components/workflow/WorkflowDelete'
 export default {
   name: 'WorkflowDetail',
+  components: {
+    WorkflowDelete
+  },
   data () {
     return {
       id: 0,
@@ -76,6 +81,11 @@ export default {
       }).finally(() => {
         mask.close()
       })
+    },
+    onWorkflowDeleted (deletedWorkflow) {
+      if (deletedWorkflow) {
+        this.$router.push({ name: 'WorkflowList', query: { projectId: deletedWorkflow.groupId } })
+      }
     }
   }
 }

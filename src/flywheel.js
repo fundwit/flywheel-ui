@@ -58,6 +58,10 @@ export class FlywheelClient {
     return axios.post(this.withPath('/v1/workflows'), creationForm).then(r => r.data)
   }
 
+  async deleteWorkflow (id) {
+    return axios.delete(this.withPath('/v1/workflows/' + id), {})
+  }
+
   async loadAvailableTransitions (flowId, from) {
     return axios.get(this.withPath(`/v1/workflows/${flowId}/transitions?fromState=${from}`)).then(r => r.data)
   }
@@ -80,7 +84,7 @@ export class FlywheelClient {
       .then(r => r.data)
   }
 
-  async queryWork (groupId) {
+  async queryWorks (groupId) {
     return axios.get(this.withPath(`/v1/works?groupId=${groupId}`), {})
       .then(r => r.data)
   }
