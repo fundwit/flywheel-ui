@@ -7,12 +7,12 @@ const routes = [
   {
     path: '/',
     name: 'Dashboard',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Dashboard.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../pages/Dashboard.vue')
   },
   {
     path: '/works',
     name: 'WorkBacklog',
-    component: () => import('../views/WorkBacklog.vue')
+    component: () => import('../pages/WorkBacklog.vue')
   },
   {
     path: '/boards',
@@ -20,17 +20,17 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/Board.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../pages/Board.vue')
   },
   {
     path: '/workflows',
     name: 'WorkflowList',
-    component: () => import('../views/WorkflowList.vue')
+    component: () => import('../pages/WorkflowList.vue')
   },
   {
     path: '/workflows/:id',
     name: 'WorkflowDetail',
-    component: () => import('../views/WorkflowDetail.vue')
+    component: () => import('../pages/WorkflowDetail.vue')
   }
 ]
 
