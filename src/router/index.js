@@ -15,6 +15,11 @@ const routes = [
     component: () => import('../pages/WorkBacklog.vue')
   },
   {
+    path: '/works/:id',
+    name: 'WorkDetail',
+    component: () => import('../pages/WorkDetailPage.vue')
+  },
+  {
     path: '/boards',
     name: 'Board',
     // route level code-splitting

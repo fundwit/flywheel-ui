@@ -1,7 +1,7 @@
 <template>
     <div>
       <div v-if="!work">
-        invalid id '{{workId}}'
+        invalid work id '{{workId}}'
       </div>
 
       <div v-if="work" id="work-detail">
@@ -127,8 +127,8 @@ export default {
   methods: {
     formatTime: formatTime,
     formatTimeDuration: formatTimeDuration,
-    onWorkDeleted (val) {
-      this.$emit('workDeleted', val)
+    onWorkDeleted (deletedWork) {
+      this.$emit('workDeleted', deletedWork)
     }
   },
   watch: {

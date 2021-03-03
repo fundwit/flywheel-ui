@@ -2,7 +2,7 @@
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
     <el-button type="primary" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">添加工作流</el-button>
     <el-table :data="workflows" style="width: 100%">
-      <el-table-column label="Theme" width="100">
+      <el-table-column width="50">
         <template slot-scope="scope">
           <el-tag size="small" :style="{ backgroundColor: scope.row.themeColor }" effect="dark">
             <i :class="scope.row.themeIcon ? scope.row.themeIcon : 'el-icon-s-claim'"/>

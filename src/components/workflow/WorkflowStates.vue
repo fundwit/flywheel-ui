@@ -3,7 +3,8 @@
     <div v-if="isLoading">Loading...</div>
     <div v-if="loadingError" style="color: red">{{ loadingError }}</div>
     <div v-if="workflowDetail">
-      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style" size="small" effect="dark">
+      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style"
+              size="small" effect="dark" class="state-list-item">
         {{ state.name }}
       </el-tag>
     </div>
@@ -60,6 +61,12 @@ export default {
 </script>
 
 <style scoped>
+.state-list-item {
+  margin-right: 1px;
+  -webkit-transform: skew(-20deg);
+  -moz-transform:skew(-20deg);
+  transform:skew(-20deg);
+}
 .state-category-stack-0 {
   background-color: #daf3f8;
 }

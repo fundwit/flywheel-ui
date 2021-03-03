@@ -12,7 +12,9 @@
       </el-table-column>
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
-          <span v-if="!scope.row.isEditing">{{ scope.row.name }}</span>
+          <span v-if="!scope.row.isEditing">
+            <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.name }}</router-link>
+          </span>
           <el-input v-if="scope.row.isEditing" v-model="editingWork.name" placeholder="请输入内容"></el-input>
         </template>
       </el-table-column>
