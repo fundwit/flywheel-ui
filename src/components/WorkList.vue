@@ -1,12 +1,20 @@
 <template>
   <div class="hello">
     {{works ? works.length : 0}}
-    <el-table
-      :data="works"
-      style="width: 100%">
+    <el-table :data="works" style="width: 100%">
+      <el-table-column width="80px">
+        <template slot-scope="scope">
+          <el-tag size="small" :style="{ backgroundColor: workflowIndex[scope.row.flowId].themeColor }" effect="dark">
+            <i :class="workflowIndex[scope.row.flowId].themeIcon ? workflowIndex[scope.row.flowId].themeIcon : 'el-icon-s-claim'"/>
+            {{workflowIndex[scope.row.flowId].name}}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
-          <span v-if="!scope.row.isEditing">{{ scope.row.name }}</span>
+          <span v-if="!scope.row.isEditing">
+            <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.name }}</router-link>
+          </span>
           <el-input v-if="scope.row.isEditing" v-model="editingWork.name" placeholder="请输入内容"></el-input>
         </template>
       </el-table-column>
@@ -14,13 +22,12 @@
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180">
       </el-table-column>
-      <el-table-column
-        prop="action" label="操作">
+      <el-table-column prop="action" label="操作">
         <template slot-scope="scope">
           <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
           <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>
           <el-button v-if="scope.row.isEditing" @click="onAbortEdit(scope)" type="text" size="small">取消</el-button>
-          <el-button v-if="!scope.row.isEditing" @click="onDeleteWork(scope)" type="text" size="small">删除</el-button>
+          <work-delete v-if="!scope.row.isEditing" :work="scope.row" @workDeleted="onWorkDeleted"/>
         </template>
       </el-table-column>
     </el-table>
@@ -30,11 +37,16 @@
 <script>
 import client from '../flywheel'
 import _ from 'lodash'
+import WorkDelete from './work/WorkDelete'
 
 export default {
   name: 'WorkList',
   props: {
-    works: null
+    works: null,
+    workflowIndex: null
+  },
+  components: {
+    WorkDelete
   },
   data () {
     return {
@@ -76,29 +88,8 @@ export default {
       delete scope.row.isEditing
       this.$set(this.works, scope.$index, updateTo)
     },
-    onDeleteWork (scope) {
-      this.$confirm('此操作将永久删除工作: "' + scope.row.name + '", 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        const mask = this.$loading({
-          lock: true,
-          text: 'deleting',
-          spinner: 'el-icon-loading',
-          background: 'rgba(255,255,255,0.7)'
-        })
-
-        client.deleteWork(scope.row.id).then((response) => {
-          this.$emit('workDeleted', scope.row)
-        }).catch((error) => {
-          this.$notify.error({ title: 'Error', message: '删除失败' + error })
-        }).finally(() => {
-          mask.close()
-        })
-      }).catch(() => {
-        this.$message({ type: 'info', message: '已取消删除' })
-      })
+    onWorkDeleted (val) {
+      this.$emit('workDeleted', val)
     }
   }
 }

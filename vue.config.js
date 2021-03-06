@@ -17,6 +17,7 @@ module.exports = {
     // },
     proxy: {
       '/api': {
+        // target: "http://127.0.0.1/",
         target: "https://flywheel-core.fundwit.com/",
         changeOrigin: true,
         pathRewrite: {'^/api': ''}

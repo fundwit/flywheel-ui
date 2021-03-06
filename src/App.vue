@@ -6,7 +6,7 @@
           <a style="color: dodgerblue"><i class="el-icon-loading"/> FlyWheel</a>
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
-            <span>Project </span>
+            <span> <i class="el-icon-folder-opened"/> Project </span>
             <el-select size="mini" :value="$route.query.projectId" @change="onCurrentProjectChange">
               <el-option
                 v-for="item in $store.state.securityContext.groupRoles"
@@ -23,6 +23,8 @@
             <router-link :to="{ name: 'WorkBacklog', query: $route.query }"><i class="el-icon-s-order"/> Backlog</router-link>
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'Board', query: $route.query }"><i class="el-icon-data-analysis"/> Board</router-link>
+            <el-divider direction="vertical"/>
+            <router-link :to="{ name: 'WorkflowList', query: $route.query }"><i class="el-icon-share"/> Workflows</router-link>
           </span>
         </el-col>
 
@@ -38,7 +40,7 @@
 
     <Intro v-if="!$store.state.isAuthenticated && !isLoading"/>
     <GroupGuide v-if="$store.state.isAuthenticated && (!$store.state.securityContext.groupRoles || $store.state.securityContext.groupRoles.length === 0)"/>
-    <router-view :class="{hidden: !$store.state.isAuthenticated || !$route.query.projectId}"/>
+    <router-view :class="{hidden: !$store.state.isAuthenticated }"/>
   </div>
 </template>
 
@@ -136,5 +138,10 @@ body {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+.el-tag{
+  border-width: 0 !important;
+  border-radius: 0 !important;
+  line-height: 26px !important;
 }
 </style>
