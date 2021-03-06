@@ -58,6 +58,10 @@ export class FlywheelClient {
     return axios.post(this.withPath('/v1/workflows'), creationForm).then(r => r.data)
   }
 
+  async updateWorkflowBase (id, workflowChanges) {
+    return axios.put(this.withPath('/v1/workflows/' + id), workflowChanges)
+  }
+
   async deleteWorkflow (id) {
     return axios.delete(this.withPath('/v1/workflows/' + id), {})
   }

@@ -21,7 +21,7 @@
       </el-table-column>
       <el-table-column label="Actions">
         <template slot-scope="scope">
-          <el-button @click="onEditWorkflow(scope)" type="text" size="small">编辑</el-button>
+          <el-button @click="onEditWorkflowDialog(scope)" type="text" size="small">编辑</el-button>
           <workflow-delete v-if="!scope.row.isEditing" :workflow="scope.row" @workflowDeleted="onWorkflowDeleted"/>
         </template>
       </el-table-column>
@@ -31,18 +31,24 @@
                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
       <workflow-creating-form :selectedProjectId="$route.query.projectId" @creating-result="onCreatingResult"/>
     </el-dialog>
+    <el-dialog v-if="editingWorkflowId" title="Editing Workflow" :visible="true" width="80%"
+               :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+      <workflow-editing-form :selectedProjectId="$route.query.projectId" :editingWorkflowId="editingWorkflowId" @action-result="onEditingResult"/>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
 import client from '../flywheel'
 import WorkflowCreatingForm from '../components/workflow/WorkflowCreatingForm'
+import WorkflowEditingForm from '../components/workflow/WorkflowEditingForm'
 import WorkflowStates from '../components/workflow/WorkflowStates'
 import WorkflowDelete from '../components/workflow/WorkflowDelete'
 export default {
   name: 'WorkflowList',
   components: {
     WorkflowCreatingForm,
+    WorkflowEditingForm,
     WorkflowStates,
     WorkflowDelete
   },
@@ -51,7 +57,8 @@ export default {
     return {
       total: 0,
       workflows: [],
-      showCreatingDialog: false
+      showCreatingDialog: false,
+      editingWorkflowId: null
     }
   },
   mounted () {
@@ -69,8 +76,8 @@ export default {
     onCreateWorkflowDialog () {
       this.showCreatingDialog = true
     },
-    onEditWorkflow (scope) {
-      console.log(scope.row.name)
+    onEditWorkflowDialog (scope) {
+      this.editingWorkflowId = scope.row.id
     },
     onWorkflowDeleted (deletedWorkflow) {
       console.log('deleted workflow ' + deletedWorkflow.id)
@@ -78,6 +85,12 @@ export default {
     },
     onCreatingResult (result) {
       this.showCreatingDialog = false
+      if (result) {
+        this.loadWorkflows()
+      }
+    },
+    onEditingResult (result) {
+      this.editingWorkflowId = null
       if (result) {
         this.loadWorkflows()
       }

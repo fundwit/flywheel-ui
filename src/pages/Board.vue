@@ -13,7 +13,7 @@
     </el-dialog>
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
-      <div v-for="state in states" :key="state.name">
+      <div v-for="state in states" :key="state.category + '-' + state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
           <i class="el-icon-s-order" v-if="state.category === 0"/>
           <i class="el-icon-stopwatch" v-if="state.category === 1"/>
