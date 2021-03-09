@@ -1,6 +1,6 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
-    <el-button type="primary" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">添加工作流</el-button>
+    <el-button type="primary" size="mini" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">添加工作流</el-button>
     <el-table :data="workflows" style="width: 100%">
       <el-table-column width="50">
         <template slot-scope="scope">

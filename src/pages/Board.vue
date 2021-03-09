@@ -1,6 +1,13 @@
 <template>
   <div>
-    <div class="page-header">个人看板 工作数量 支持的工作类型</div>
+    <div class="page-header">
+      个人看板 工作数量 支持的工作类型
+      <el-button type="primary" size="mini" @click="onCreateWorkDialog" icon="el-icon-circle-plus-outline">添加工作</el-button>
+    </div>
+    <el-dialog v-if="showWorkCreatingDialog === true" title="Create Work" :visible="true" width="80%"
+               :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+      <work-creating-form :selectedProjectId="$route.query.projectId" @action-result="onWorkCreatingResult"/>
+    </el-dialog>
 
 <!--    <el-drawer title="我是标题" :visible.sync="drawer" :destroy-on-close="true" :show-close="false" size="80%" :with-header="false" direction="rtl" :before-close="onCloseDetail">-->
 <!--      <div>-->
@@ -13,7 +20,7 @@
     </el-dialog>
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
-      <div v-for="state in states" :key="state.category + '-' + state.name">
+      <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
           <i class="el-icon-s-order" v-if="state.category === 0"/>
           <i class="el-icon-stopwatch" v-if="state.category === 1"/>
@@ -21,11 +28,12 @@
           {{state.name}}
         </div>
 
-        <draggable :id="'stack-'+state.name" :data-state="state.name" handle=".drag-handler"
+        <draggable :id="'stack-'+state.name" :data-state="state.name" :data-state-category="state.category" handle=".drag-handler"
                    :class="computeStateStackStyle(state)" :style="conHeight"
-                   :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.name]" draggable=".item"
+                   :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
-          <div class="list-group-item item" :data-state="work.stateName" :data-id="work.id" v-for="work in groupedWorks[state.name]" :key="work.name">
+          <div v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
+               :data-id="work.id" :data-state="work.stateName" class="list-group-item item">
             <el-row type="flex" justify="space-between">
               <el-col :span="20">
                 <div class="drag-handler">
@@ -66,18 +74,22 @@ import Avatar from 'vue-avatar'
 import computeOrderChanges from '../orders'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDetail from '../components/WorkDetail'
+import WorkCreatingForm from '../components/work/WorkCreatingForm'
 
 export default {
   components: {
     draggable,
     Avatar,
-    WorkDetail
+    WorkDetail,
+    WorkCreatingForm
   },
   data () {
     return {
+      showWorkCreatingDialog: false,
+
       draggedWork: null,
       groupedWorks: {},
-      states: [],
+      mergedStates: [],
       workflowIndex: {},
       conHeight: {
         minHeight: ''
@@ -107,7 +119,7 @@ export default {
     clear () {
       this.draggedWork = null
       this.groupedWorks = {}
-      this.states = []
+      this.mergedStates = []
       this.workflowIndex = {}
     },
     loadBoardData () {
@@ -147,7 +159,7 @@ export default {
     loadWorksAndStates (groupId) {
       const vue = this
       return client.queryWorks(groupId).then((resp) => {
-        const groupedWorks = _.groupBy(resp.data, (v) => v.stateName)
+        const queriedGroupedWorks = _.groupBy(resp.data, (v) => v.stateCategory + '-' + v.stateName)
         const workflowIds = {}
         _.forEach(resp.data, v => {
           workflowIds[v.flowId] = v.flowId
@@ -161,20 +173,23 @@ export default {
         Promise.all(workflowRequest).then(workflowList => {
           const aggregatedStates = []
           const workflowIndex = {}
+          const workflowStateIndex = {}
           _.forEach(workflowList, workflow => {
             workflowIndex[workflow.id] = workflow
             _.forEach(workflow.stateMachine.states, state => {
-              aggregatedStates.push(state)
+              if (!workflowStateIndex[state.category + '-' + state.name]) {
+                workflowStateIndex[state.category + '-' + state.name] = 1
+                aggregatedStates.push(state)
+              }
             })
           })
           vue.workflowIndex = workflowIndex
-          vue.states = _.orderBy(aggregatedStates, ['category'], ['asc'])
-
-          _.forEach(vue.states, (state) => {
-            vue.$set(vue.groupedWorks, state.name, [])
+          vue.mergedStates = _.orderBy(aggregatedStates, ['category'], ['asc'])
+          _.forEach(vue.mergedStates, (state) => {
+            vue.$set(vue.groupedWorks, state.category + '-' + state.name, [])
           })
-          _.forEach(groupedWorks, (works, stateName) => {
-            vue.$set(vue.groupedWorks, stateName, works)
+          _.forEach(queriedGroupedWorks, (stateWorks, stateKey) => {
+            vue.$set(vue.groupedWorks, stateKey, stateWorks)
           })
         })
       })
@@ -182,21 +197,22 @@ export default {
 
     onStart (event) {
       const fromState = event.from.getAttribute('data-state')
-      this.draggedWork = this.groupedWorks[fromState][event.oldIndex]
+      const fromStateCategory = event.from.getAttribute('data-state-category')
+      this.draggedWork = this.groupedWorks[fromStateCategory + '-' + fromState][event.oldIndex]
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.loadAvailableTransitions(this.draggedWork.flowId, fromState).then(r => {
         const availableStates = _.flatMap(r, transition => {
-          return transition.to.name
+          return transition.to
         })
-        availableStates.push(fromState)
-        _.forEach(vue.states, (state, idx) => {
-          if (_.includes(availableStates, state.name)) {
+        availableStates.push({ name: fromState, category: parseInt(fromStateCategory, 10) })
+        _.forEach(vue.mergedStates, (state, idx) => {
+          if (_.find(availableStates, availableState => availableState.name === state.name && availableState.category === state.category)) {
             state.canTransitionTo = true
-            vue.$set(vue.states, idx, state)
+            vue.$set(vue.mergedStates, idx, state)
           } else {
             state.canTransitionTo = false
-            vue.$set(vue.states, idx, state)
+            vue.$set(vue.mergedStates, idx, state)
           }
         })
       }).catch(error => {
@@ -205,8 +221,8 @@ export default {
         mask.close()
       })
     },
-    updateOrders (stateName, newIndex, oldIndex) {
-      const works = this.groupedWorks[stateName]
+    updateOrders (stateCategory, stateName, newIndex, oldIndex) {
+      const works = this.groupedWorks[stateCategory + '-' + stateName]
       if (works.length <= 1) {
         return Promise.resolve()
       }
@@ -225,7 +241,7 @@ export default {
         _.forEach(changes, change => {
           works[change.index].orderInState = change.newOrder
         })
-        vue.$set(vue.groupedWorks, stateName, works)
+        vue.$set(vue.groupedWorks, stateCategory + '-' + stateName, works)
       }).catch(error => {
         this.$notify.error({ title: 'Error', message: 'failed to update index:' + error })
       })
@@ -234,30 +250,32 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       const vue = this
       // remove dynamic class
-      _.forEach(vue.states, (state, idx) => {
+      _.forEach(vue.mergedStates, (state, idx) => {
         delete state.canTransitionTo
-        vue.$set(vue.states, idx, state)
+        vue.$set(vue.mergedStates, idx, state)
       })
       const fromState = event.from.getAttribute('data-state')
+      const fromStateCategory = event.from.getAttribute('data-state-category')
       const toState = event.to.getAttribute('data-state')
+      const toStateCategory = event.to.getAttribute('data-state-category')
       const workId = event.item.getAttribute('data-id')
       const flowId = this.draggedWork.flowId
 
       if (fromState === toState) {
-        this.updateOrders(toState, event.newIndex, event.oldIndex).finally(() => {
+        this.updateOrders(toStateCategory, toState, event.newIndex, event.oldIndex).finally(() => {
           this.draggedWork = null
           mask.close()
         })
       } else {
         client.createWorkTransition(flowId, workId, fromState, toState).then(body => {
           this.draggedWork.stateName = toState
-          vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
-          return this.updateOrders(toState, event.newIndex, 9007199254740990)
+          vue.$set(vue.groupedWorks, toStateCategory + '-' + toState, vue.groupedWorks[toStateCategory + '-' + toState])
+          return this.updateOrders(toStateCategory, toState, event.newIndex, 9007199254740990)
         }).catch(error => {
-          vue.groupedWorks[toState].splice(event.newIndex, 1)
-          vue.groupedWorks[fromState].splice(event.oldIndex, 0, this.draggedWork)
-          vue.$set(vue.groupedWorks, toState, vue.groupedWorks[toState])
-          vue.$set(vue.groupedWorks, fromState, vue.groupedWorks[fromState])
+          vue.groupedWorks[toStateCategory + '-' + toState].splice(event.newIndex, 1)
+          vue.groupedWorks[fromStateCategory + '-' + fromState].splice(event.oldIndex, 0, this.draggedWork)
+          vue.$set(vue.groupedWorks, toStateCategory + '-' + toState, vue.groupedWorks[toState])
+          vue.$set(vue.groupedWorks, fromStateCategory + '-' + fromState, vue.groupedWorks[fromState])
 
           this.$notify.error({ title: 'Error', message: '未查询到可移动到的状态' + error })
         }).finally(() => {
@@ -277,6 +295,17 @@ export default {
     onWorkDeleted (val) {
       if (val) {
         this.onCloseDetail()
+        this.loadBoardData()
+      }
+    },
+    onCreateWorkDialog () {
+      this.showWorkCreatingDialog = true
+    },
+    onWorkCreatingResult (work) {
+      this.showWorkCreatingDialog = false
+      if (work) {
+        delete work.state
+        delete work.type
         this.loadBoardData()
       }
     }

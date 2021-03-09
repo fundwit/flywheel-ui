@@ -1,23 +1,12 @@
 <template>
   <div class="page">
     <el-card class="box-card">
-      <div >
-        <el-form :inline="true" :model="creationForm" class="demo-form-inline">
-          <el-form-item label="Name">
-            <el-input v-model="creationForm.name" placeholder="Work Name"></el-input>
-          </el-form-item>
-          <el-form-item label="Workflow">
-            <workflow-selector :group-id="this.$route.query.projectId" @workflowSelected="onWorkflowSelected"/>
-          </el-form-item>
-          <el-form-item>
-            [{{creationForm.workflow.name}}]
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onCreateWork" icon="el-icon-circle-plus-outline">添加工作</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+      <el-button type="primary" size="mini" @click="showCreatingDialog = true" icon="el-icon-circle-plus-outline">添加工作</el-button>
     </el-card>
+    <el-dialog v-if="showCreatingDialog === true" title="Create Work" :visible="true" width="80%"
+               :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+      <work-creating-form :selectedProjectId="$route.query.projectId" @action-result="onCreatingResult"/>
+    </el-dialog>
 
     <el-card class="box-card">
       <WorkList :works="works" :workflowIndex="workflowIndex" @workUpdated="workUpdated" @workDeleted="workDeleted" />
@@ -26,8 +15,8 @@
 </template>
 
 <script>
-import WorkList from '@/components/WorkList.vue'
-import WorkflowSelector from '../components/workflow/WorkflowSelector'
+import WorkList from '../components/WorkList.vue'
+import WorkCreatingForm from '../components/work/WorkCreatingForm'
 import client from '../flywheel'
 import _ from 'lodash'
 
@@ -35,17 +24,15 @@ export default {
   name: 'WorkBacklog',
   components: {
     WorkList,
-    WorkflowSelector
+    WorkCreatingForm
   },
   data () {
     return {
-      creationForm: {
-        name: '',
-        workflow: {}
-      },
       works: [],
       workflowIndex: {},
-      total: 0
+      total: 0,
+
+      showCreatingDialog: false
     }
   },
   watch: {
@@ -70,23 +57,13 @@ export default {
       const index = _.findIndex(this.works, i => i.id === work.id)
       this.works.splice(index, 1)
     },
-    onCreateWork () {
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
-        this.$notify.error({ title: 'Error', message: 'Group is not specified' })
-        return
-      }
-
-      const mask = this.$loading({ lock: true, text: 'Creating', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.createWork({ name: this.creationForm.name, groupId: groupId, flowId: this.creationForm.workflow.id }).then((work) => {
+    onCreatingResult (work) {
+      this.showCreatingDialog = false
+      if (work) {
         delete work.state
         delete work.type
         this.works.push(work)
-      }).catch((error) => {
-        this.$notify.error({ title: 'Error', message: '创建失败' + error })
-      }).finally(() => {
-        mask.close()
-      })
+      }
     },
     clear () {
       this.works = []
@@ -115,9 +92,6 @@ export default {
       }).finally(() => {
         mask.close()
       })
-    },
-    onWorkflowSelected (val) {
-      this.creationForm.workflow = val
     }
   }
 }

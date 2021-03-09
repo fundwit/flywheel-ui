@@ -4,7 +4,14 @@
     <div v-if="loadingError" style="color: red">{{ loadingError }}</div>
     <div v-if="workflows">
       <el-select v-model="selectedId" @change="onWorkflowSelected">
-        <el-option v-for="item in workflows" :value="item.id" :label="item.name" :key="item.id"/>
+        <el-option v-for="item in workflows" :value="item.id" :label="item.name" :key="item.id">
+          <span style="float: left">
+            <el-tag size="small" :style="{ backgroundColor: item.themeColor }" effect="dark">
+              <i :class="item.themeIcon ? item.themeIcon : 'el-icon-s-claim'"/>
+            </el-tag>
+          </span>
+          <span style="float: left; margin-left: 10px"> {{item.name}}</span>
+        </el-option>
       </el-select>
     </div>
   </div>

@@ -5,9 +5,9 @@ axios.defaults.adapter = adapter
 axios.defaults.withCredentials = true
 
 export const stateCategories = [
-  { id: 0, name: 'InBacklog' },
-  { id: 1, name: 'InProcess' },
-  { id: 2, name: 'Done' }
+  { id: 1, name: 'InBacklog' },
+  { id: 2, name: 'InProcess' },
+  { id: 3, name: 'Done' }
 ]
 
 export class FlywheelClient {
