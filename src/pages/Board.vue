@@ -13,7 +13,7 @@
       </el-checkbox-group>
 
     </div>
-    <el-dialog v-if="showWorkCreatingDialog === true" title="Create Work" :visible="true" width="80%"
+    <el-dialog v-if="showWorkCreatingDialog === true" title="Create Work" :visible="true" width="60%"
                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
       <work-creating-form :selectedProjectId="$route.query.projectId" @action-result="onWorkCreatingResult"/>
     </el-dialog>
@@ -24,7 +24,7 @@
 <!--      </div>-->
 <!--    </el-drawer>-->
 
-    <el-dialog v-if="workDetail" :show-close="false" :visible="true" width="60%" :before-close="onCloseDetail">
+    <el-dialog v-if="workDetail" :show-close="true" :visible="true" :close-on-click-modal="false" width="60%" :before-close="onCloseDetail">
       <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted"/>
     </el-dialog>
 
@@ -35,6 +35,9 @@
           <i class="el-icon-stopwatch" v-if="state.category === 1"/>
           <i class="el-icon-finished" v-if="state.category === 2"/>
           {{state.name}}
+          <span v-for="workflowId in state.workflowIds" :key="workflowId" :style="{ backgroundColor: workflowIndex[workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
+            <i :class="workflowIndex[workflowId].themeIcon"/>
+          </span>
         </div>
 
         <draggable :id="'stack-'+state.name" :data-state="state.name" :data-state-category="state.category" handle=".drag-handler"
@@ -192,14 +195,18 @@ export default {
 
           const aggregatedStates = []
           const workflowIndex = {}
-          const workflowStateIndex = {}
+          const tmpAggregatedStatesIndex = {}
           _.forEach(workflowList, workflow => {
             workflowIndex[workflow.id] = workflow
             if (_.includes(vue.workflowFilter, workflow.id)) {
               _.forEach(workflow.stateMachine.states, state => {
-                if (!workflowStateIndex[state.category + '-' + state.name]) {
-                  workflowStateIndex[state.category + '-' + state.name] = 1
-                  aggregatedStates.push(state)
+                const aggregatedState = tmpAggregatedStatesIndex[state.category + '-' + state.name]
+                if (!aggregatedState) {
+                  const newAggregatedState = { name: state.name, category: state.category, workflowIds: [workflow.id] }
+                  tmpAggregatedStatesIndex[state.category + '-' + state.name] = newAggregatedState
+                  aggregatedStates.push(newAggregatedState)
+                } else {
+                  aggregatedState.workflowIds.push(workflow.id)
                 }
               })
             }
@@ -382,6 +389,7 @@ export default {
     margin-right: 5px;
   }
   .work-card-title {
+    font-size: 0.8rem;
     padding: 10px 0;
     height: 3rem;
     word-wrap:break-word;
