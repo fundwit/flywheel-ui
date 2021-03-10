@@ -210,13 +210,13 @@ export default {
   font-weight: bold;
 }
 
-.state-category-stack-0 {
+.state-category-stack-1 {
   background-color: #daf3f8;
 }
-.state-category-stack-1 {
+.state-category-stack-2 {
   background-color: #fcf7cd;
 }
-.state-category-stack-2 {
+.state-category-stack-3 {
   background-color: #e2e2e2;
 }
 .step-current {

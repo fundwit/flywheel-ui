@@ -42,15 +42,15 @@ export default {
   },
   methods: {
     mapStateCategory (category) {
-      if (category === 0) {
+      if (category === 1) {
         return {
           style: ''
         }
-      } else if (category === 1) {
+      } else if (category === 2) {
         return {
           style: 'warning'
         }
-      } else if (category === 2) {
+      } else if (category === 3) {
         return {
           style: 'info'
         }
@@ -67,13 +67,13 @@ export default {
   -moz-transform:skew(-20deg);
   transform:skew(-20deg);
 }
-.state-category-stack-0 {
+.state-category-stack-1 {
   background-color: #daf3f8;
 }
-.state-category-stack-1 {
+.state-category-stack-2 {
   background-color: #fcf7cd;
 }
-.state-category-stack-2 {
+.state-category-stack-3 {
   background-color: #e2e2e2;
 }
 </style>

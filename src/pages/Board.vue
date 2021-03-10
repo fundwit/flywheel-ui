@@ -3,6 +3,15 @@
     <div class="page-header">
       个人看板 工作数量 支持的工作类型
       <el-button type="primary" size="mini" @click="onCreateWorkDialog" icon="el-icon-circle-plus-outline">添加工作</el-button>
+
+      <el-checkbox-group v-model="workflowFilter" @change="onWorkflowFilterChanged">
+        <el-checkbox v-for="(workflow, key) in workflowIndex" :label="workflow.id" :key="key">
+          <el-tag class="work-type-label" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
+            <i :class="workflow.themeIcon"/> {{workflow.name}}
+          </el-tag>
+        </el-checkbox>
+      </el-checkbox-group>
+
     </div>
     <el-dialog v-if="showWorkCreatingDialog === true" title="Create Work" :visible="true" width="80%"
                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
@@ -86,6 +95,8 @@ export default {
   data () {
     return {
       showWorkCreatingDialog: false,
+
+      workflowFilter: null,
 
       draggedWork: null,
       groupedWorks: {},
@@ -171,17 +182,27 @@ export default {
         })
 
         Promise.all(workflowRequest).then(workflowList => {
+          if (vue.workflowFilter === null) {
+            const workflowFilter = []
+            _.forEach(workflowList, workflow => {
+              workflowFilter.push(workflow.id)
+            })
+            vue.workflowFilter = workflowFilter
+          }
+
           const aggregatedStates = []
           const workflowIndex = {}
           const workflowStateIndex = {}
           _.forEach(workflowList, workflow => {
             workflowIndex[workflow.id] = workflow
-            _.forEach(workflow.stateMachine.states, state => {
-              if (!workflowStateIndex[state.category + '-' + state.name]) {
-                workflowStateIndex[state.category + '-' + state.name] = 1
-                aggregatedStates.push(state)
-              }
-            })
+            if (_.includes(vue.workflowFilter, workflow.id)) {
+              _.forEach(workflow.stateMachine.states, state => {
+                if (!workflowStateIndex[state.category + '-' + state.name]) {
+                  workflowStateIndex[state.category + '-' + state.name] = 1
+                  aggregatedStates.push(state)
+                }
+              })
+            }
           })
           vue.workflowIndex = workflowIndex
           vue.mergedStates = _.orderBy(aggregatedStates, ['category'], ['asc'])
@@ -189,7 +210,8 @@ export default {
             vue.$set(vue.groupedWorks, state.category + '-' + state.name, [])
           })
           _.forEach(queriedGroupedWorks, (stateWorks, stateKey) => {
-            vue.$set(vue.groupedWorks, stateKey, stateWorks)
+            const filteredWorks = _.filter(stateWorks, w => _.includes(vue.workflowFilter, w.flowId))
+            vue.$set(vue.groupedWorks, stateKey, filteredWorks)
           })
         })
       })
@@ -308,6 +330,9 @@ export default {
         delete work.type
         this.loadBoardData()
       }
+    },
+    onWorkflowFilterChanged (value) {
+      this.loadBoardData()
     }
   }
 }
@@ -381,23 +406,23 @@ export default {
     padding: 10px;
     width: 300px;
   }
-  .state-category-header-0 {
+  .state-category-header-1 {
     background-color: #daf3f8;
   }
-  .state-category-header-1 {
+  .state-category-header-2 {
     background-color: #fcf7cd;
   }
-  .state-category-header-2 {
+  .state-category-header-3 {
     background-color: #e2e2e2;
   }
 
-  .state-category-stack-0 {
+  .state-category-stack-1 {
     background-color: #daf3f8;
   }
-  .state-category-stack-1 {
+  .state-category-stack-2 {
     background-color: #fcf7cd;
   }
-  .state-category-stack-2 {
+  .state-category-stack-3 {
     background-color: #e2e2e2;
   }
 </style>
