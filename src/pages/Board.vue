@@ -122,6 +122,7 @@ export default {
   watch: {
     $route: {
       handler () {
+        this.workflowFilter = null
         this.loadBoardData()
       },
       deep: true
@@ -406,11 +407,11 @@ export default {
     background-color: #f8d6dc !important;
   }
   .state-header {
-    margin: 1em;
+    margin: 0.5em;
     padding: 10px;
   }
   .state-stack {
-    margin: 1em;
+    margin: 0.5em;
     padding: 10px;
     width: 300px;
   }
