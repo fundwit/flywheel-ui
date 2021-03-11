@@ -31,9 +31,9 @@
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
       <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
-          <i class="el-icon-s-order" v-if="state.category === 0"/>
-          <i class="el-icon-stopwatch" v-if="state.category === 1"/>
-          <i class="el-icon-finished" v-if="state.category === 2"/>
+          <i class="el-icon-s-order" v-if="state.category === 1"/>
+          <i class="el-icon-stopwatch" v-if="state.category === 2"/>
+          <i class="el-icon-finished" v-if="state.category === 3"/>
           {{state.name}}
           <span v-for="workflowId in state.workflowIds" :key="workflowId" :style="{ backgroundColor: workflowIndex[workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
             <i :class="workflowIndex[workflowId].themeIcon"/>
