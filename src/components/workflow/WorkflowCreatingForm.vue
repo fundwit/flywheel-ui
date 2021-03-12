@@ -131,7 +131,7 @@ export default {
       states.forEach(fromState => {
         states.forEach(toState => {
           if (fromState.name !== toState.name) {
-            fullTransitions.push({ name: fromState.name + '->' + toState.name, from: fromState, to: toState })
+            fullTransitions.push({ name: fromState.name + '->' + toState.name, from: fromState.name, to: toState.name })
           }
         })
       })

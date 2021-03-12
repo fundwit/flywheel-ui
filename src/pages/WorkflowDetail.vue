@@ -21,9 +21,9 @@
             <el-table-column label="name" prop="name"></el-table-column>
             <el-table-column label="from" prop="from.name">
               <template slot-scope="scope1">
-                <div :class="'state-category-stack-' + scope1.row.from.category">
+                <div :class="'state-category-stack-' + workflowStateMap[scope1.row.from].category">
                   <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{ scope1.row.from.name }}</span>
+                  <span style="margin-left: 10px">{{ scope1.row.from }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -32,9 +32,9 @@
             </el-table-column>
             <el-table-column label="to" prop="to.name">
               <template slot-scope="scope1">
-                <div :class="'state-category-stack-' + scope1.row.to.category">
+                <div :class="'state-category-stack-' + workflowStateMap[scope1.row.to].category">
                   <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{ scope1.row.to.name }}</span>
+                  <span style="margin-left: 10px">{{ scope1.row.to }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -59,6 +59,7 @@ export default {
     return {
       id: 0,
       workflow: null,
+      workflowStateMap: {},
       statesTransition: {}
     }
   },
@@ -75,7 +76,12 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.detailWorkflow(this.id).then((resp) => {
         vue.workflow = resp
-        vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from.name)
+        const workflowStates = {}
+        _.forEach(vue.workflow.stateMachine.states, state => {
+          workflowStates[state.name] = state
+        })
+        vue.workflowStateMap = workflowStates
+        vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {

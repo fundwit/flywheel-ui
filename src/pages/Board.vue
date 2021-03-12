@@ -203,17 +203,18 @@ export default {
               _.forEach(workflow.stateMachine.states, state => {
                 const aggregatedState = tmpAggregatedStatesIndex[state.category + '-' + state.name]
                 if (!aggregatedState) {
-                  const newAggregatedState = { name: state.name, category: state.category, workflowIds: [workflow.id] }
+                  const newAggregatedState = { name: state.name, category: state.category, order: state.order, workflowIds: [workflow.id] }
                   tmpAggregatedStatesIndex[state.category + '-' + state.name] = newAggregatedState
                   aggregatedStates.push(newAggregatedState)
                 } else {
+                  aggregatedState.order = _.max([aggregatedState.order, state.order])
                   aggregatedState.workflowIds.push(workflow.id)
                 }
               })
             }
           })
           vue.workflowIndex = workflowIndex
-          vue.mergedStates = _.orderBy(aggregatedStates, ['category'], ['asc'])
+          vue.mergedStates = _.orderBy(aggregatedStates, ['category', 'order'], ['asc', 'asc'])
           _.forEach(vue.mergedStates, (state) => {
             vue.$set(vue.groupedWorks, state.category + '-' + state.name, [])
           })
@@ -232,10 +233,14 @@ export default {
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.loadAvailableTransitions(this.draggedWork.flowId, fromState).then(r => {
-        const availableStates = _.flatMap(r, transition => {
-          return transition.to
+        const workflowStates = {}
+        _.forEach(vue.workflowIndex[vue.draggedWork.flowId].stateMachine.states, state => {
+          workflowStates[state.name] = state
         })
-        availableStates.push({ name: fromState, category: parseInt(fromStateCategory, 10) })
+        const availableStates = _.flatMap(r, transition => {
+          return workflowStates[transition.to]
+        })
+        availableStates.push(workflowStates[fromState])
         _.forEach(vue.mergedStates, (state, idx) => {
           if (_.find(availableStates, availableState => availableState.name === state.name && availableState.category === state.category)) {
             state.canTransitionTo = true
