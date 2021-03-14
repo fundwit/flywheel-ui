@@ -48,7 +48,7 @@
 <!--    </el-drawer>-->
 
     <el-dialog v-if="workDetail" :show-close="true" :visible="true" :close-on-click-modal="false" width="60%" :before-close="onCloseDetail">
-      <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted"/>
+      <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted" @workUpdated="onWorkUpdated"/>
     </el-dialog>
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
@@ -366,6 +366,20 @@ export default {
       if (val) {
         this.onCloseDetail()
         this.loadBoardData()
+      }
+    },
+    onWorkUpdated (updatedWork) {
+      if (updatedWork) {
+        const key = updatedWork.stateCategory + '-' + updatedWork.stateName
+        const works = this.groupedWorks[key]
+        const oldWorkIndex = _.findIndex(works, w => w.id === updatedWork.id)
+        if (oldWorkIndex >= 0) {
+          const mergedWork = _.extend(works[oldWorkIndex], updatedWork)
+          works.splice(oldWorkIndex, 1, mergedWork)
+          this.$set(this.groupedWorks, key, works)
+        } else {
+          console.log(`work ${updatedWork.id} not found in ${key} group`)
+        }
       }
     },
     onCreateWorkDialog () {

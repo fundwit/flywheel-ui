@@ -12,7 +12,7 @@
             <el-input show-password v-model="loginForm.password"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onInternalSignIn">Sign In</el-button>
+            <el-button autofocus type="primary" @click="onInternalSignIn">Sign In</el-button>
           </el-form-item>
         </el-form>
 
