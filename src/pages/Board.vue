@@ -35,8 +35,8 @@
           <i class="el-icon-stopwatch" v-if="state.category === 2"/>
           <i class="el-icon-finished" v-if="state.category === 3"/>
           {{state.name}}
-          <span v-for="workflowId in state.workflowIds" :key="workflowId" :style="{ backgroundColor: workflowIndex[workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
-            <i :class="workflowIndex[workflowId].themeIcon"/>
+          <span v-for="stat in state.stats" :key="stat" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
+            <i :class="workflowIndex[stat.workflowId].themeIcon"/> {{stat.count}}/{{stat.capacity}}
           </span>
         </div>
 
@@ -194,30 +194,33 @@ export default {
             vue.workflowFilter = workflowFilter
           }
 
-          const aggregatedStates = []
+          const mergedStates = []
           const workflowIndex = {}
-          const tmpAggregatedStatesIndex = {}
+          const tmpMergedStatesIndex = {}
           _.forEach(workflowList, workflow => {
             workflowIndex[workflow.id] = workflow
             if (_.includes(vue.workflowFilter, workflow.id)) {
               _.forEach(workflow.stateMachine.states, state => {
-                const aggregatedState = tmpAggregatedStatesIndex[state.category + '-' + state.name]
-                if (!aggregatedState) {
-                  const newAggregatedState = { name: state.name, category: state.category, order: state.order, workflowIds: [workflow.id] }
-                  tmpAggregatedStatesIndex[state.category + '-' + state.name] = newAggregatedState
-                  aggregatedStates.push(newAggregatedState)
+                const count = _.filter(resp.data, work => work.flowId === workflow.id && work.stateName === state.name).length
+                const mergedState = tmpMergedStatesIndex[state.category + '-' + state.name]
+                if (!mergedState) {
+                  const newAggregatedState = { name: state.name, category: state.category, order: state.order, stats: [{ workflowId: workflow.id, count: count, capacity: '∞' }] }
+                  tmpMergedStatesIndex[state.category + '-' + state.name] = newAggregatedState
+                  mergedStates.push(newAggregatedState)
                 } else {
-                  aggregatedState.order = _.max([aggregatedState.order, state.order])
-                  aggregatedState.workflowIds.push(workflow.id)
+                  mergedState.order = _.max([mergedState.order, state.order])
+                  mergedState.stats.push({ workflowId: workflow.id, count: count, capacity: '∞' })
                 }
               })
             }
           })
           vue.workflowIndex = workflowIndex
-          vue.mergedStates = _.orderBy(aggregatedStates, ['category', 'order'], ['asc', 'asc'])
+          vue.mergedStates = _.orderBy(mergedStates, ['category', 'order'], ['asc', 'asc'])
+          // initialize state arrays
           _.forEach(vue.mergedStates, (state) => {
             vue.$set(vue.groupedWorks, state.category + '-' + state.name, [])
           })
+          // apply workflow filter
           _.forEach(queriedGroupedWorks, (stateWorks, stateKey) => {
             const filteredWorks = _.filter(stateWorks, w => _.includes(vue.workflowFilter, w.flowId))
             vue.$set(vue.groupedWorks, stateKey, filteredWorks)
