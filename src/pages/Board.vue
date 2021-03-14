@@ -1,17 +1,40 @@
 <template>
   <div>
     <div class="page-header">
-      个人看板 工作数量 支持的工作类型
-      <el-button type="primary" size="mini" @click="onCreateWorkDialog" icon="el-icon-circle-plus-outline">添加工作</el-button>
+      <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center; justify-content: space-between;">
+        <div class="kanban-header-left">
+          <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+            <el-card class="kanban-info" :style="{'margin-right': '5px', 'border-radius': '0'}" :body-style="{ padding: '0px', margin: '5px' }" shadow="never">
+              默认看板
+            </el-card>
 
-      <el-checkbox-group v-model="workflowFilter" @change="onWorkflowFilterChanged">
-        <el-checkbox v-for="(workflow, key) in workflowIndex" :label="workflow.id" :key="key">
-          <el-tag class="work-type-label" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
-            <i :class="workflow.themeIcon"/> {{workflow.name}}
-          </el-tag>
-        </el-checkbox>
-      </el-checkbox-group>
+            <el-card class="kanban-actions" :style="{'margin-right': '5px', 'border-radius': '0'}" :body-style="{ padding: '0px', margin: '5px' }" shadow="never">
+              <el-button type="primary" size="mini" @click="onCreateWorkDialog" icon="el-icon-circle-plus-outline">添加工作</el-button>
+            </el-card>
 
+            <el-card class="kanban-workflow-filters" :style="{'margin-right': '5px', 'border-radius': '0'}" :body-style="{ padding: '0px', margin: '5px' }" shadow="never">
+              <el-checkbox-group v-model="workflowFilter" @change="onWorkflowFilterChanged">
+                <el-checkbox v-for="(workflow, key) in workflowIndex" :label="workflow.id" :key="key">
+                  <el-tag class="work-type-label" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
+                    <i :class="workflow.themeIcon"/> {{workflow.name}}
+                  </el-tag>
+                </el-checkbox>
+              </el-checkbox-group>
+            </el-card>
+          </div>
+        </div>
+        <div class="kanban-header-right">
+          <el-card class="kanban-stats" :style="{'margin-right': '5px', 'border-radius': '0', 'border-width': '0'}" :body-style="{ padding: '0px', margin: '5px' }" shadow="never">
+            <span :style="{ backgroundColor: '#E1E1E0', 'font-size':'0.6rem' }">
+              {{totalFilteredWorksCount}} work{{totalFilteredWorksCount > 1 ? 's': ''}}
+            </span>
+            <el-divider direction="vertical"/>
+            <span v-for="(workflow, flowId) in workflowIndexFiltered" :key="flowId" :style="{ backgroundColor: workflow.themeColor, color:'white', 'font-size':'0.6rem' }">
+              <i :class="workflow.themeIcon"/> {{workflow.workCount}}
+            </span>
+          </el-card>
+        </div>
+      </div>
     </div>
     <el-dialog v-if="showWorkCreatingDialog === true" title="Create Work" :visible="true" width="60%"
                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
@@ -35,7 +58,7 @@
           <i class="el-icon-stopwatch" v-if="state.category === 2"/>
           <i class="el-icon-finished" v-if="state.category === 3"/>
           {{state.name}}
-          <span v-for="stat in state.stats" :key="stat" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
+          <span v-for="stat in state.stats" :key="stat.workflowId" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
             <i :class="workflowIndex[stat.workflowId].themeIcon"/> {{stat.count}}/{{stat.capacity}}
           </span>
         </div>
@@ -105,11 +128,17 @@ export default {
       groupedWorks: {},
       mergedStates: [],
       workflowIndex: {},
+      totalFilteredWorksCount: 0,
       conHeight: {
         minHeight: ''
       },
       // drawer: false,
       workDetail: null
+    }
+  },
+  computed: {
+    workflowIndexFiltered () {
+      return _.filter(this.workflowIndex, (workflow, workflowId) => _.includes(this.workflowFilter, workflowId))
     }
   },
   created () {
@@ -136,6 +165,7 @@ export default {
       this.groupedWorks = {}
       this.mergedStates = []
       this.workflowIndex = {}
+      this.totalFilteredWorksCount = 0
     },
     loadBoardData () {
       this.clear()
@@ -198,6 +228,7 @@ export default {
           const workflowIndex = {}
           const tmpMergedStatesIndex = {}
           _.forEach(workflowList, workflow => {
+            workflow.workCount = _.filter(resp.data, w => w.flowId === workflow.id).length
             workflowIndex[workflow.id] = workflow
             if (_.includes(vue.workflowFilter, workflow.id)) {
               _.forEach(workflow.stateMachine.states, state => {
@@ -224,6 +255,7 @@ export default {
           _.forEach(queriedGroupedWorks, (stateWorks, stateKey) => {
             const filteredWorks = _.filter(stateWorks, w => _.includes(vue.workflowFilter, w.flowId))
             vue.$set(vue.groupedWorks, stateKey, filteredWorks)
+            vue.totalFilteredWorksCount += filteredWorks.length
           })
         })
       })
