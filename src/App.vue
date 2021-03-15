@@ -7,7 +7,7 @@
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
             <span> <i class="el-icon-folder-opened"/> Project </span>
-            <el-select size="mini" :value="$route.query.projectId" @change="onCurrentProjectChange">
+            <el-select size="mini" :value="projectId" :disabled="!$route.query.projectId" @change="onCurrentProjectChange">
               <el-option
                 v-for="item in $store.state.securityContext.groupRoles"
                 :key="item.groupId"
@@ -20,11 +20,11 @@
 
         <el-col :span="8">
           <span style="margin: 0 auto" v-if="$store.state.isAuthenticated">
-            <router-link :to="{ name: 'WorkBacklog', query: $route.query }"><i class="el-icon-s-order"/> Backlog</router-link>
+            <router-link :to="{ name: 'WorkBacklog', query: { projectId: projectId }}"><i class="el-icon-s-order"/> Backlog</router-link>
             <el-divider direction="vertical"/>
-            <router-link :to="{ name: 'Board', query: $route.query }"><i class="el-icon-data-analysis"/> Board</router-link>
+            <router-link :to="{ name: 'Board', query: { projectId: projectId } }"><i class="el-icon-data-analysis"/> Board</router-link>
             <el-divider direction="vertical"/>
-            <router-link :to="{ name: 'WorkflowList', query: $route.query }"><i class="el-icon-share"/> Workflows</router-link>
+            <router-link :to="{ name: 'WorkflowList', query: { projectId: projectId } }"><i class="el-icon-share"/> Workflows</router-link>
           </span>
         </el-col>
 
@@ -62,6 +62,15 @@ export default {
       isLoading: true
     }
   },
+  computed: {
+    projectId () {
+      if (this.$route.query.projectId) {
+        return this.$route.query.projectId
+      } else {
+        return this.$store.state.currentGroupId
+      }
+    }
+  },
   mounted () {
     this.authWithLastToken()
   },
@@ -80,7 +89,7 @@ export default {
       this.$router.push({ name: this.$route.name, query: { projectId: val } })
     },
     redirectToAvailedProject (route) {
-      if (this.$route.query.projectId !== '') {
+      if (this.$route.query.projectId !== '' && _.includes(['WorkBacklog', 'Board', 'WorkflowList'], this.$route.name)) {
         if (!_.find(this.$store.state.securityContext.groupRoles, i => i.groupId === route.query.projectId)) {
           if (this.$store.state.securityContext.groupRoles.length > 0) {
             this.$router.replace({ name: route.name, query: { projectId: this.$store.state.defaultGroupId } })

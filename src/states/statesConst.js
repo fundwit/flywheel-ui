@@ -1,4 +1,5 @@
 
 export default {
-  mutateSecurityContext: 'mutateSecurityContext'
+  mutateSecurityContext: 'mutateSecurityContext',
+  currentGroupId: 'currentGroupId'
 }

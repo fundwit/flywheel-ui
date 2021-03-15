@@ -243,6 +243,7 @@ export default {
     const mask = this.$loading({ lock: true, text: 'requesting', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
     client.detailWork(this.workId).then((resp) => {
       vue.work = resp
+      this.$emit('workLoaded', vue.work)
       return client.detailWorkflow(vue.work.flowId)
     }).then(resp => {
       vue.workflow = resp

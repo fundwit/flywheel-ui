@@ -13,6 +13,8 @@ const store = new Vuex.Store({
   plugins: debug ? [createLogger] : [],
 
   state: {
+    currentGroupId: null,
+
     defaultGroupId: null,
     isAuthenticated: false,
     securityContext: {
@@ -23,6 +25,10 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
+    [statesConst.currentGroupId] (state, groupId) {
+      state.currentGroupId = groupId
+    },
+
     [statesConst.mutateSecurityContext] (state, secCtx) {
       if (!secCtx || !secCtx.identity || !secCtx.identity.id || !secCtx.identity.name) {
         state.securityContext = {
@@ -61,6 +67,7 @@ axios.interceptors.response.use(res => {
       groupRoles: [],
       token: null
     })
+    store.commit(statesConst.currentGroupId, null)
   }
   return Promise.reject(err)
 })

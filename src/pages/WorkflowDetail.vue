@@ -50,6 +50,7 @@
 import _ from 'lodash'
 import client from '../flywheel'
 import WorkflowDelete from '../components/workflow/WorkflowDelete'
+import statesConst from '../states/statesConst'
 export default {
   name: 'WorkflowDetail',
   components: {
@@ -64,6 +65,7 @@ export default {
     }
   },
   mounted () {
+    this.$store.commit(statesConst.currentGroupId, null)
     this.id = this.$route.params.id
     this.loadWorkflowDetail()
   },
@@ -82,6 +84,8 @@ export default {
         })
         vue.workflowStateMap = workflowStates
         vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from)
+
+        this.$store.commit(statesConst.currentGroupId, vue.workflow.groupId)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {
