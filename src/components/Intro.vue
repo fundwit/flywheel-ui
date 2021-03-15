@@ -6,13 +6,13 @@
       <el-col :span="8" style="padding: 5em">
         <el-form label-width="80px" :model="loginForm">
           <el-form-item label="用户名">
-            <el-input v-model="loginForm.name"></el-input>
+            <el-input v-model="loginForm.name" @keyup.enter.native="onInternalSignIn"></el-input>
           </el-form-item>
           <el-form-item label="密码">
-            <el-input show-password v-model="loginForm.password"></el-input>
+            <el-input show-password v-model="loginForm.password" @keyup.enter.native="onInternalSignIn"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button autofocus type="primary" @click="onInternalSignIn">Sign In</el-button>
+            <el-button type="primary" @click="onInternalSignIn" @keyup.enter.native="onInternalSignIn">Sign In</el-button>
           </el-form-item>
         </el-form>
 

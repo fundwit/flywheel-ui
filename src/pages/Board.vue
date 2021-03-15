@@ -51,7 +51,7 @@
       <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted" @workUpdated="onWorkUpdated"/>
     </el-dialog>
 
-    <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
+    <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; width: 100%; overflow: auto">
       <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
           <i class="el-icon-s-order" v-if="state.category === 1"/>
@@ -64,7 +64,7 @@
         </div>
 
         <draggable :id="'stack-'+state.name" :data-state="state.name" :data-state-category="state.category" handle=".drag-handler"
-                   :class="computeStateStackStyle(state)" :style="conHeight"
+                   :class="computeStateStackStyle(state)" :style="conHeight" class="hide-scroll-bar"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
           <div v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
@@ -130,7 +130,8 @@ export default {
       workflowIndex: {},
       totalFilteredWorksCount: 0,
       conHeight: {
-        minHeight: ''
+        height: '',
+        'overflow-y': 'auto'
       },
       // drawer: false,
       workDetail: null
@@ -183,7 +184,7 @@ export default {
       })
     },
     computeHeight () {
-      this.conHeight.minHeight = window.innerHeight - 200 + 'px'
+      this.conHeight.height = window.innerHeight - 220 + 'px'
     },
     computeStateHeaderStyle (state) {
       return {
@@ -424,6 +425,7 @@ export default {
 
   .item{
     padding: 12px;
+    width: 273px;
     margin-bottom: 15px;
     border:  solid 1px #eee;
     background-color: white;
@@ -487,5 +489,21 @@ export default {
   }
   .state-category-stack-3 {
     background-color: #e2e2e2;
+  }
+  /*.hide-scroll-bar::-webkit-scrollbar {*/
+  /*  display: none;*/
+  /*}*/
+  .hide-scroll-bar::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width : 2px;
+    height: 1px;
+  }
+  .hide-scroll-bar::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    background: dodgerblue;
+  }
+  .hide-scroll-bar::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    background: transparent;
   }
 </style>
