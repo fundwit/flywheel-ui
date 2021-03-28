@@ -9,7 +9,7 @@
           <work-delete :work="work" @workDeleted="onWorkDeleted"/>
         </div>
 
-        <el-divider style="margin: 5px;"/>
+        <el-divider/>
 
         <div id="work-detail-header" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
           <div style="padding: 10px; font-size: 1.0rem">
@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <el-divider style="margin: 5px;"/>
+        <el-divider/>
 
         <div id="work-detail-body">
           <div id="state-area" style="padding: 10px;">
@@ -67,7 +67,7 @@
           <div id="property-area" style="padding: 10px;">
           </div>
 
-          <el-divider style="margin: 5px;"/>
+          <el-divider/>
 
           <div id="trace-area" style="padding: 10px;">
             <div>Process Progress</div>

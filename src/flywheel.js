@@ -70,6 +70,24 @@ export class FlywheelClient {
     return axios.get(this.withPath(`/v1/workflows/${flowId}/transitions?fromState=${from}`)).then(r => r.data)
   }
 
+  async enableWorkflowTransition (flowId, from, to) {
+    return axios.post(this.withPath(`/v1/workflows/${flowId}/transitions`), [{ name: from + '->' + to, from: from, to: to }])
+      .then(r => r.data)
+  }
+
+  async disableWorkflowTransition (flowId, from, to) {
+    return axios.request({
+      method: 'DELETE',
+      url: this.withPath(`/v1/workflows/${flowId}/transitions`),
+      data: [{ name: from + '->' + to, from: from, to: to }]
+    }).then(r => r.data)
+  }
+
+  async updateWorkflowState (flowId, changes) {
+    return axios.put(this.withPath(`/v1/workflows/${flowId}/states`), changes)
+      .then(r => r.data)
+  }
+
   async createWorkTransition (flowID, workID, from, to) {
     return axios.post(this.withPath('/v1/transitions'),
       { flowId: flowID, workId: workID, fromState: from, toState: to }).then(r => r.data)

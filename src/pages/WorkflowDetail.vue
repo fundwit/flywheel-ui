@@ -1,60 +1,61 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
-    <div>
-      <workflow-delete v-if="workflow" :workflow="workflow" @workflowDeleted="onWorkflowDeleted"/>
-    </div>
-    <div>{{id}} <span v-if="workflow">{{workflow.name}}</span></div>
-    <el-divider style="margin: 0"/>
-    <div>state machine</div>
-    <el-table v-if="workflow && workflow.stateMachine" :data="workflow.stateMachine.states" style="width: 100%">
-      <el-table-column label="states" width="180">
-        <template slot-scope="scope">
-          <div :class="'state-category-stack-' + scope.row.category">
-            <i class="el-icon-time"></i>
-            <span style="margin-left: 10px">{{ scope.row.name }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="transitions">
-        <template slot-scope="scope">
-          <el-table :data="statesTransition[scope.row.name]" :show-header="false" :cell-style="{padding: 0}">
-            <el-table-column label="name" prop="name"></el-table-column>
-            <el-table-column label="from" prop="from.name">
-              <template slot-scope="scope1">
-                <div :class="'state-category-stack-' + workflowStateMap[scope1.row.from].category">
-                  <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{ scope1.row.from }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column width="50px">
-              <template> ==> </template>
-            </el-table-column>
-            <el-table-column label="to" prop="to.name">
-              <template slot-scope="scope1">
-                <div :class="'state-category-stack-' + workflowStateMap[scope1.row.to].category">
-                  <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{ scope1.row.to }}</span>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div style="width: 90%; margin: 0 auto;">
+      <div>
+        <workflow-delete v-if="workflow" :workflow="workflow" @workflowDeleted="onWorkflowDeleted"/>
+      </div>
+      <div>
+        {{id}}
+        <div v-if="workflow">
+          <el-tag size="small" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
+            <i :class="workflow.themeIcon ? workflow.themeIcon : 'el-icon-s-claim'"/>  {{workflow.name}}
+          </el-tag>
+        </div>
+      </div>
+      <el-divider/>
+      <div>state machine</div>
 
+      <el-button type="primary" size="mini" @click="onCreateWorkflowStateDialog" disabled icon="el-icon-circle-plus-outline">添加状态</el-button>
+
+      <div v-if="workflow && workflow.stateMachine" style="margin: 10px 40px">
+        <draggable group="backlog" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
+          <el-card v-for="state in inBacklogStates" :key="state.name" class="item state-category-stack-1" style="margin: 20px 0; border-radius: 0;">
+            <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
+          </el-card>
+        </draggable>
+
+        <el-divider/>
+        <draggable group="inProgress" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
+          <el-card v-for="state in inProgressStates" :key="state.name" class="item state-category-stack-2" style="margin: 20px 0; border-radius: 0">
+            <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
+          </el-card>
+        </draggable>
+
+        <el-divider/>
+        <draggable group="done" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
+          <el-card v-for="state in doneStates" :key="state.name" class="item state-category-stack-3" style="margin: 20px 0; border-radius: 0">
+            <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
+          </el-card>
+        </draggable>
+      </div>
+    </div>
   </el-card>
 </template>
 
 <script>
 import _ from 'lodash'
 import client from '../flywheel'
+import { categoryStyle } from '../themes'
 import WorkflowDelete from '../components/workflow/WorkflowDelete'
+import WorkflowStateDetail from '../components/workflow/WorkflowStateDetail'
 import statesConst from '../states/statesConst'
+import draggable from 'vuedraggable'
 export default {
   name: 'WorkflowDetail',
   components: {
-    WorkflowDelete
+    WorkflowDelete,
+    WorkflowStateDetail,
+    draggable
   },
   data () {
     return {
@@ -64,12 +65,24 @@ export default {
       statesTransition: {}
     }
   },
+  computed: {
+    inBacklogStates () {
+      return _.filter(this.workflow.stateMachine.states, s => s.category === 1)
+    },
+    inProgressStates () {
+      return _.filter(this.workflow.stateMachine.states, s => s.category === 2)
+    },
+    doneStates () {
+      return _.filter(this.workflow.stateMachine.states, s => s.category === 3)
+    }
+  },
   mounted () {
     this.$store.commit(statesConst.currentGroupId, null)
     this.id = this.$route.params.id
     this.loadWorkflowDetail()
   },
   methods: {
+    categoryStyle: categoryStyle,
     loadWorkflowDetail () {
       if (!this.id) {
         return
@@ -96,19 +109,38 @@ export default {
       if (deletedWorkflow) {
         this.$router.push({ name: 'WorkflowList', query: { projectId: deletedWorkflow.groupId } })
       }
+    },
+    buildToStates (state) {
+      const matrix = {}
+      _.forEach(this.workflow.stateMachine.states, s => {
+        if (s.name !== state.name) {
+          matrix[s.name] = { name: s.name, category: s.category, order: s.order, enabled: false }
+        }
+      })
+      _.forEach(this.workflow.stateMachine.transitions, t => {
+        if (t.from === state.name) {
+          matrix[t.to].enabled = true
+        }
+      })
+      return matrix
+    },
+    onCreateWorkflowStateDialog () {
     }
   }
 }
 </script>
 
 <style scoped>
+  .el-divider {
+    margin: 10px 0 !important;
+  }
   .state-category-stack-1 {
-    background-color: #daf3f8;
+    background-color: #e4f5f8;
   }
   .state-category-stack-2 {
-    background-color: #fcf7cd;
+    background-color: #faf7dc;
   }
   .state-category-stack-3 {
-    background-color: #e2e2e2;
+    background-color: #f1f1f1;
   }
 </style>
