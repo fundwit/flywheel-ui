@@ -302,7 +302,7 @@ export default {
       const workOrders = _.map(works, (work, index) => {
         return { index: index, id: work.id, orderInState: work.orderInState }
       })
-      const changes = computeOrderChanges(workOrders, newIndex, oldIndex)
+      const changes = computeOrderChanges(workOrders, 'id', 'orderInState', newIndex, oldIndex)
       if (!changes || changes.length === 0) {
         return Promise.resolve()
       }

@@ -18,22 +18,25 @@
       <el-button type="primary" size="mini" @click="onCreateWorkflowStateDialog" disabled icon="el-icon-circle-plus-outline">添加状态</el-button>
 
       <div v-if="workflow && workflow.stateMachine" style="margin: 10px 40px">
-        <draggable group="backlog" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
-          <el-card v-for="state in inBacklogStates" :key="state.name" class="item state-category-stack-1" style="margin: 20px 0; border-radius: 0;">
+        <draggable group="backlog" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass"
+                   @end="onStateOrderChangeEnd">
+          <el-card v-for="state in categoryStates[1]" :data-state="state.name" :data-category=state.category :key="state.name" class="item state-category-stack-1" style="margin: 20px 0; border-radius: 0;">
             <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
           </el-card>
         </draggable>
 
         <el-divider/>
-        <draggable group="inProgress" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
-          <el-card v-for="state in inProgressStates" :key="state.name" class="item state-category-stack-2" style="margin: 20px 0; border-radius: 0">
+        <draggable group="inProgress" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass"
+                   @end="onStateOrderChangeEnd">
+          <el-card v-for="state in categoryStates[2]" :data-state="state.name" :data-category=state.category :key="state.name" class="item state-category-stack-2" style="margin: 20px 0; border-radius: 0">
             <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
           </el-card>
         </draggable>
 
         <el-divider/>
-        <draggable group="done" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass">
-          <el-card v-for="state in doneStates" :key="state.name" class="item state-category-stack-3" style="margin: 20px 0; border-radius: 0">
+        <draggable group="done" animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass"
+                   @end="onStateOrderChangeEnd">
+          <el-card v-for="state in categoryStates[3]" :data-state="state.name" :data-category=state.category :key="state.name" class="item state-category-stack-3" style="margin: 20px 0; border-radius: 0">
             <workflow-state-detail :workflow-id="workflow.id" :state="state" :to-states="buildToStates(state)"/>
           </el-card>
         </draggable>
@@ -50,6 +53,7 @@ import WorkflowDelete from '../components/workflow/WorkflowDelete'
 import WorkflowStateDetail from '../components/workflow/WorkflowStateDetail'
 import statesConst from '../states/statesConst'
 import draggable from 'vuedraggable'
+import computeOrderChanges from '../orders'
 export default {
   name: 'WorkflowDetail',
   components: {
@@ -62,18 +66,8 @@ export default {
       id: 0,
       workflow: null,
       workflowStateMap: {},
-      statesTransition: {}
-    }
-  },
-  computed: {
-    inBacklogStates () {
-      return _.filter(this.workflow.stateMachine.states, s => s.category === 1)
-    },
-    inProgressStates () {
-      return _.filter(this.workflow.stateMachine.states, s => s.category === 2)
-    },
-    doneStates () {
-      return _.filter(this.workflow.stateMachine.states, s => s.category === 3)
+      statesTransition: {},
+      categoryStates: {}
     }
   },
   mounted () {
@@ -96,8 +90,9 @@ export default {
           workflowStates[state.name] = state
         })
         vue.workflowStateMap = workflowStates
-        vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from)
 
+        vue.categoryStates = _.groupBy(vue.workflow.stateMachine.states, s => s.category)
+        vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from)
         this.$store.commit(statesConst.currentGroupId, vue.workflow.groupId)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
@@ -125,6 +120,42 @@ export default {
       return matrix
     },
     onCreateWorkflowStateDialog () {
+    },
+    onStateOrderChangeEnd (event) {
+      // const state = event.item.getAttribute('data-state')
+      const category = event.item.getAttribute('data-category')
+      this.updateOrders(category, event.newIndex, event.oldIndex)
+    },
+    updateOrders (category, newIndex, oldIndex) {
+      const vue = this
+      const states = vue.categoryStates[category]
+      if (!states || states.length <= 1) {
+        return Promise.resolve()
+      }
+
+      const draggedState = states[oldIndex]
+      states.splice(oldIndex, 1)
+      states.splice(newIndex, 0, draggedState)
+
+      // compute orders
+      const stateOrders = _.map(states, (state, index) => {
+        return { index: index, state: state.name, order: state.order }
+      })
+      const changes = computeOrderChanges(stateOrders, 'state', 'order', newIndex, oldIndex)
+      if (!changes || changes.length === 0) {
+        return Promise.resolve()
+      }
+      return client.updateWorkflowStateRangeOrders(this.workflow.id, changes).then(() => {
+        _.forEach(changes, change => {
+          states[change.index].order = change.newOrder
+        })
+        vue.$set(vue.categoryStates, category, states)
+      }).catch(error => {
+        vue.categoryStates[category].splice(newIndex, 1)
+        vue.categoryStates[category].splice(oldIndex, 0, draggedState)
+        vue.$set(vue.categoryStates, category, vue.categoryStates[category])
+        this.$notify.error({ title: 'Error', message: 'failed to update index:' + error })
+      })
     }
   }
 }

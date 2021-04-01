@@ -88,6 +88,10 @@ export class FlywheelClient {
       .then(r => r.data)
   }
 
+  async updateWorkflowStateRangeOrders (flowId, orderUpdating) {
+    return axios.put(this.withPath(`/v1/workflows/${flowId}/state-orders`), orderUpdating).then(r => r.data)
+  }
+
   async createWorkTransition (flowID, workID, from, to) {
     return axios.post(this.withPath('/v1/transitions'),
       { flowId: flowID, workId: workID, fromState: from, toState: to }).then(r => r.data)
