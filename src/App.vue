@@ -20,7 +20,7 @@
 
         <el-col :span="8">
           <span style="margin: 0 auto" v-if="$store.state.isAuthenticated">
-            <router-link :to="{ name: 'WorkBacklog', query: { projectId: projectId }}"><i class="el-icon-s-order"/> Backlog</router-link>
+            <router-link :to="{ name: 'WorkBacklog', query: { projectId: projectId }}"><i class="el-icon-s-order"/> Works</router-link>
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'Board', query: { projectId: projectId } }"><i class="el-icon-data-analysis"/> Board</router-link>
             <el-divider direction="vertical"/>
@@ -152,5 +152,8 @@ body {
   border-width: 0 !important;
   border-radius: 0 !important;
   line-height: 26px !important;
+}
+.el-radio-button span {
+  border-radius: 0 !important;
 }
 </style>
