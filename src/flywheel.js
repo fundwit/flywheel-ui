@@ -7,7 +7,8 @@ axios.defaults.withCredentials = true
 export const stateCategories = [
   { id: 1, name: 'InBacklog' },
   { id: 2, name: 'InProcess' },
-  { id: 3, name: 'Done' }
+  { id: 3, name: 'Done' },
+  { id: 4, name: 'Rejected' }
 ]
 
 export class FlywheelClient {
@@ -85,6 +86,11 @@ export class FlywheelClient {
 
   async updateWorkflowState (flowId, changes) {
     return axios.put(this.withPath(`/v1/workflows/${flowId}/states`), changes)
+      .then(r => r.data)
+  }
+
+  async createWorkflowState (flowId, stateCreating) {
+    return axios.post(this.withPath(`/v1/workflows/${flowId}/states`), stateCreating)
       .then(r => r.data)
   }
 

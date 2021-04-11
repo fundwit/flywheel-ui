@@ -53,10 +53,8 @@
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; width: 100%; overflow: auto">
       <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
-        <div :id="'col-'+state.name" :class="computeStateHeaderStyle(state)" role="group" :aria-label="state.name">
-          <i class="el-icon-s-order" v-if="state.category === 1"/>
-          <i class="el-icon-stopwatch" v-if="state.category === 2"/>
-          <i class="el-icon-finished" v-if="state.category === 3"/>
+        <div :id="'col-'+state.name" :class="computeStateHeaderClass(state)" :style="computeStateCategoryHeaderStyle(state)" role="group" :aria-label="state.name">
+          <i :class="categoryStyle(state.category).themeIcon"/>
           {{state.name}}
           <span v-for="stat in state.stats" :key="stat.workflowId" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
             <i :class="workflowIndex[stat.workflowId].themeIcon"/> {{stat.count}}/{{stat.capacity}}
@@ -64,7 +62,7 @@
         </div>
 
         <draggable :id="'stack-'+state.name" :data-state="state.name" :data-state-category="state.category" handle=".drag-handler"
-                   :class="computeStateStackStyle(state)" :style="conHeight" class="hide-scroll-bar"
+                   :class="computeStateStackClass(state)" :style="computeStateCategoryStackStyle(state)" class="hide-scroll-bar"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
           <div v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
@@ -110,6 +108,7 @@ import computeOrderChanges from '../orders'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDetail from '../components/WorkDetail'
 import WorkCreatingForm from '../components/work/WorkCreatingForm'
+import { categoryStyle } from '../themes'
 
 export default {
   components: {
@@ -161,6 +160,7 @@ export default {
   methods: {
     formatTime: formatTime,
     formatTimeDuration: formatTimeDuration,
+    categoryStyle: categoryStyle,
     clear () {
       this.draggedWork = null
       this.groupedWorks = {}
@@ -186,18 +186,18 @@ export default {
     computeHeight () {
       this.conHeight.height = window.innerHeight - 220 + 'px'
     },
-    computeStateHeaderStyle (state) {
-      return {
-        'state-header': true,
-        ['state-category-header-' + state.category]: true,
-        ['state-category-header-' + state.category]: true
-      }
+    computeStateCategoryHeaderStyle (state) {
+      return categoryStyle(state.category).backgroundStyle
     },
-    computeStateStackStyle (state) {
+    computeStateCategoryStackStyle (state) {
+      return _.assign(categoryStyle(state.category).backgroundStyle, this.conHeight)
+    },
+    computeStateHeaderClass (state) {
+      return { 'state-header': true }
+    },
+    computeStateStackClass (state) {
       return {
         'state-stack': true,
-        ['state-category-stack-' + state.category]: true,
-        ['state-category-stack-' + state.category]: true,
         'state-valid': state.canTransitionTo === true,
         'state-invalid': state.canTransitionTo === false
       }
@@ -471,25 +471,7 @@ export default {
     padding: 10px;
     width: 300px;
   }
-  .state-category-header-1 {
-    background-color: #daf3f8;
-  }
-  .state-category-header-2 {
-    background-color: #fcf7cd;
-  }
-  .state-category-header-3 {
-    background-color: #e2e2e2;
-  }
 
-  .state-category-stack-1 {
-    background-color: #daf3f8;
-  }
-  .state-category-stack-2 {
-    background-color: #fcf7cd;
-  }
-  .state-category-stack-3 {
-    background-color: #e2e2e2;
-  }
   /*.hide-scroll-bar::-webkit-scrollbar {*/
   /*  display: none;*/
   /*}*/

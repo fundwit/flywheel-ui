@@ -15,7 +15,7 @@
 import { client, stateCategories } from '../../flywheel'
 import { categoryStyle } from '../../themes'
 export default {
-  name: 'WorkflowStates',
+  name: 'StateMachinePlainGraph',
   props: {
     workflowId: null
   },

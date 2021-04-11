@@ -1,6 +1,6 @@
 <template>
   <el-card class="box-card" style="width: 80%; margin: 1rem auto">
-    <el-button type="primary" size="mini" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">添加工作流</el-button>
+    <el-button type="primary" size="mini" @click="onCreateWorkflowDialog" icon="el-icon-circle-plus-outline">新建工作流</el-button>
     <el-table :data="workflows" style="width: 100%">
       <el-table-column width="50">
         <template slot-scope="scope">
@@ -16,7 +16,7 @@
       </el-table-column>
       <el-table-column label="States">
         <template slot-scope="scope">
-          <WorkflowStates :workflow-id="scope.row.id"/>
+          <StateMachinePlainGraph :workflow-id="scope.row.id"/>
         </template>
       </el-table-column>
       <el-table-column label="Actions">
@@ -42,14 +42,14 @@
 import client from '../flywheel'
 import WorkflowCreatingForm from '../components/workflow/WorkflowCreatingForm'
 import WorkflowEditingForm from '../components/workflow/WorkflowEditingForm'
-import WorkflowStates from '../components/workflow/WorkflowStates'
+import StateMachinePlainGraph from '../components/statemachine/StateMachinePlainGraph'
 import WorkflowDelete from '../components/workflow/WorkflowDelete'
 export default {
   name: 'WorkflowList',
   components: {
     WorkflowCreatingForm,
     WorkflowEditingForm,
-    WorkflowStates,
+    StateMachinePlainGraph,
     WorkflowDelete
   },
 

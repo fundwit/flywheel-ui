@@ -27,49 +27,10 @@
     <el-divider style="margin: 0"/>
 
     <div>state machine</div>
-    <div>states</div>
-
-    <el-table :data="states" style="width: 100%">
-      <el-table-column label="Name" prop="name">
-        <template slot-scope="scope">
-          <el-input size="small" placeholder="input the name of this state" v-model="scope.row.name"></el-input>
-        </template>
-      </el-table-column>
-      <el-table-column label="Category" prop="category">
-        <template slot-scope="scope">
-          <el-select v-model="scope.row.category" placeholder="select the category of this state">
-            <el-option v-for="category in stateCategories"
-                       :key="category.id" :label="category.name" :value="category.id">
-            </el-option>
-          </el-select>
-        </template>
-      </el-table-column>
-      <el-table-column align="right">
-        <template slot-scope="scope">
-          <el-button size="mini" @click="handleMoveStateUp(scope.$index, scope.row)">Move Up</el-button>
-          <el-button size="mini" @click="handleMoveStateDown(scope.$index, scope.row)">Move Down</el-button>
-          <el-button size="mini" type="danger" @click="handleDropState(scope.$index, scope.row)">Drop</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-button size="mini" type="success" @click="handleAddState()">Add State</el-button>
-
-    <div>states transitions</div>
-    <table>
-      <tr>
-        <th></th>
-        <th v-for="to in states" :key="to.name">To {{to.name}}</th>
-      </tr>
-      <tr v-for="from in states" :key="from.name">
-        <th>From {{from.name}}</th>
-        <td v-for="to in states" :key="to.name">
-          <span v-if="from.name === to.name"> - </span>
-          <span v-if="from.name !== to.name"> V </span>
-        </td>
-      </tr>
-    </table>
+    <state-machine-creating-form @stateMachineUpdated="onStateMachineUpdated"/>
 
     <el-divider style="margin: 0"/>
+
     <el-button type="primary" @click="onCreateWorkflow">Submit</el-button>
     <el-button @click="onCancel">Cancel</el-button>
   </div>
@@ -78,9 +39,13 @@
 <script>
 import { client, stateCategories } from '../../flywheel'
 import { randomColor } from '../../colors'
+import StateMachineCreatingForm from '../statemachine/StateMachineCreatingForm'
 
 export default {
   name: 'WorkflowCreatingForm',
+  components: {
+    StateMachineCreatingForm
+  },
   props: {
     selectedProjectId: null
   },
@@ -93,52 +58,24 @@ export default {
         themeColor: randomColor(),
         themeIcon: ''
       },
-      states: [],
-      transitions: [],
+      stateMachine: {
+        states: [],
+        transitions: []
+      },
       creatingResult: null
     }
   },
   methods: {
-    handleAddState () {
-      this.states.push({ name: '', category: null })
-    },
-    handleMoveStateUp (idx) {
-      if (idx <= 0) {
-        return
-      }
-      const stateArray = this.states
-      const item = stateArray[idx]
-      this.$set(this.states, idx, this.states[idx - 1])
-      this.$set(this.states, idx - 1, item)
-    },
-    handleMoveStateDown (idx) {
-      if (idx >= this.states.length - 1) {
-        return
-      }
-      const stateArray = this.states
-      const item = stateArray[idx]
-      this.$set(this.states, idx, this.states[idx + 1])
-      this.$set(this.states, idx + 1, item)
-    },
-    handleDropState (idx) {
-      this.states.splice(idx, 1)
+    onStateMachineUpdated (fsm) {
+      this.stateMachine = fsm
     },
     onCancel () {
       this.$emit('creating-result', null)
     },
-    buildFullTransitions (states) {
-      const fullTransitions = []
-      states.forEach(fromState => {
-        states.forEach(toState => {
-          if (fromState.name !== toState.name) {
-            fullTransitions.push({ name: fromState.name + '->' + toState.name, from: fromState.name, to: toState.name })
-          }
-        })
-      })
-      return fullTransitions
-    },
+
     onCreateWorkflow () {
-      if (!this.creatingWorkflow || !this.creatingWorkflow.name || !this.creatingWorkflow.groupId || !this.states || !this.states.length) {
+      if (!this.creatingWorkflow || !this.creatingWorkflow.name || !this.creatingWorkflow.groupId ||
+          !this.stateMachine || !this.stateMachine.states || !this.stateMachine.states.length) {
         this.$notify.error({ title: 'Error', message: '参数错误' })
         return
       }
@@ -150,10 +87,7 @@ export default {
         groupId: this.creatingWorkflow.groupId,
         themeColor: this.creatingWorkflow.themeColor,
         themeIcon: this.creatingWorkflow.themeIcon ? this.creatingWorkflow.themeIcon : 'el-icon-s-opportunity',
-        stateMachine: {
-          states: this.states,
-          transitions: this.buildFullTransitions(this.states)
-        }
+        stateMachine: this.stateMachine
       }).then((resp) => {
         vue.creatingResult = resp
       }).catch((error) => {
