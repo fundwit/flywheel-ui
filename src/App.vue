@@ -156,4 +156,7 @@ body {
 .el-radio-button span {
   border-radius: 0 !important;
 }
+.active-item {
+  cursor: pointer;
+}
 </style>

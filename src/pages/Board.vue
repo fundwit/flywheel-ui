@@ -53,46 +53,33 @@
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; width: 100%; overflow: auto">
       <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
-        <div :id="'col-'+state.name" :class="computeStateHeaderClass(state)" :style="computeStateCategoryHeaderStyle(state)" role="group" :aria-label="state.name">
-          <i :class="categoryStyle(state.category).themeIcon"/>
-          {{state.name}}
-          <span v-for="stat in state.stats" :key="stat.workflowId" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
-            <i :class="workflowIndex[stat.workflowId].themeIcon"/> {{stat.count}}/{{stat.capacity}}
+        <div :id="'col-'+state.name" :class="computeStateHeaderClass(state)" :style="computeStateCategoryHeaderStyle(state)" role="group" :aria-label="state.name"
+             style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; overflow: auto">
+          <span style="flex-grow: 1">
+            <i :class="categoryStyle(state.category).themeIcon"/>
+            {{state.name}}
+            <span v-for="stat in state.stats" :key="stat.workflowId" :style="{ backgroundColor: workflowIndex[stat.workflowId].themeColor, color:'white', 'font-size':'0.6rem' }">
+              <i :class="workflowIndex[stat.workflowId].themeIcon"/> {{stat.count}}/{{stat.capacity}}
+            </span>
           </span>
+
+          <el-dropdown v-if="state.category === 3 || state.category === 4" size="small">
+            <span class="el-dropdown-link">
+               <i class="el-icon-more"/>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item icon="el-icon-setting"  @click.native="handleClick">Settings</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
 
         <draggable :id="'stack-'+state.name" :data-state="state.name" :data-state-category="state.category" handle=".drag-handler"
                    :class="computeStateStackClass(state)" :style="computeStateCategoryStackStyle(state)" class="hide-scroll-bar"
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
-          <div v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
-               :data-id="work.id" :data-state="work.stateName" class="list-group-item item">
-            <el-row type="flex" justify="space-between">
-              <el-col :span="20">
-                <div class="drag-handler">
-                  <el-tag key="task" class="work-type-label" :style="{ backgroundColor: workflowIndex[work.flowId].themeColor }" effect="dark">
-                    <i :class="workflowIndex[work.flowId].themeIcon"/>
-                    {{workflowIndex[work.flowId].name}}
-                  </el-tag>
-                  <span>{{work.id}}</span>
-                </div>
-                <div @click="onWorkDetail(work)" class="work-card-title">
-                  {{ work.name }}
-                </div>
-              </el-col>
-              <el-col :span="3">
-                <Avatar username="admin xx" :rounded="false"/>
-              </el-col>
-            </el-row>
-
-            <div>
-              <i class="el-icon-stopwatch"/>
-              <span v-if="work.state.category !== 2">{{formatTimeDuration(work.stateBeginTime, null)}} | </span>
-              {{formatTimeDuration(work.processBeginTime, work.processEndTime)}}
-              |
-              {{ formatTime(work.createTime) }}
-            </div>
-          </div>
+          <work-card v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
+                     :work="work" :workflow="workflowIndex[work.flowId]" @titleClicked="onWorkDetail"
+                     :data-id="work.id" :data-state="work.stateName"/>
         </draggable>
       </div>
     </div>
@@ -103,19 +90,19 @@
 import draggable from 'vuedraggable'
 import client from '../flywheel'
 import _ from 'lodash'
-import Avatar from 'vue-avatar'
 import computeOrderChanges from '../orders'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDetail from '../components/WorkDetail'
 import WorkCreatingForm from '../components/work/WorkCreatingForm'
+import WorkCard from '../components/work/WorkCard'
 import { categoryStyle } from '../themes'
 
 export default {
   components: {
     draggable,
-    Avatar,
     WorkDetail,
-    WorkCreatingForm
+    WorkCreatingForm,
+    WorkCard
   },
   data () {
     return {
@@ -396,6 +383,8 @@ export default {
     },
     onWorkflowFilterChanged (value) {
       this.loadBoardData()
+    },
+    handleClick () {
     }
   }
 }
@@ -422,40 +411,15 @@ export default {
     outline:none !important;
     background-image:none !important;
   }
-
-  .item{
-    padding: 12px;
-    width: 273px;
-    margin-bottom: 15px;
-    border:  solid 1px #eee;
-    background-color: white;
-    box-shadow: 0 1px 6px 0 rgba(0,0,0,.1);
-  }
-  .item:hover{
-    background-color: #fdfdfd;
-    box-shadow: 0 2px 12px 1px rgba(0,0,0,.2);
-  }
-  .item+.item{
-    border-top:none ;
-    margin-top: 6px;
-  }
   .work-type-label {
     line-height: 20px;
     height: 24px;
     padding: 0 5px;
     margin-right: 5px;
   }
-  .work-card-title {
-    font-size: 0.8rem;
-    padding: 10px 0;
-    height: 3rem;
-    word-wrap:break-word;
-    word-break:break-all;
-    overflow: hidden;
-    line-height: 1.5rem;
-    color: #929191;
-  }
-
+.el-dropdown-link{
+  cursor: pointer;
+}
   .state-valid {
     background-color: #d6fdd6 !important;
   }

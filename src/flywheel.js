@@ -130,6 +130,10 @@ export class FlywheelClient {
     return axios.delete(this.withPath('/v1/works/' + id), {})
   }
 
+  async archiveWorks (idList) {
+    return axios.post(this.withPath('/v1/archived-works'), { workIdList: idList }).then(r => r.data)
+  }
+
   async updateStateRangeOrders (orderUpdating) {
     return axios.put(this.withPath('/v1/work-orders'), orderUpdating).then(r => r.data)
   }
