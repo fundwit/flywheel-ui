@@ -18,7 +18,7 @@
              <i class="el-icon-more"/>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-setting" @click.native="archiveWork">Archive</el-dropdown-item>
+            <el-dropdown-item v-if="work.stateCategory == 3 || work.stateCategory == 4" icon="el-icon-setting" @click.native="archiveWork">Archive</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -99,7 +99,6 @@ export default {
         cancelButtonText: 'Cancel',
         type: 'warning'
       }).then(() => {
-        debugger
         return client.archiveWorks([this.work.id]).then(resp => {
           vue.$message({ type: 'success', message: 'archive success' })
           actionResult.success = true

@@ -122,7 +122,7 @@ export class FlywheelClient {
   }
 
   async queryBacklog (groupId) {
-    return axios.get(this.withPath(`/v1/works?groupId=${groupId}&stateCategory=0&stateCategory=1`), {})
+    return axios.get(this.withPath(`/v1/works?groupId=${groupId}&stateCategory=1&stateCategory=2`), {})
       .then(r => r.data)
   }
 

@@ -78,7 +78,8 @@
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
           <work-card v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
-                     :work="work" :workflow="workflowIndex[work.flowId]" @titleClicked="onWorkDetail"
+                     :work="work" :workflow="workflowIndex[work.flowId]"
+                     @titleClicked="onWorkDetail" @workArchived="onWorkArchived"
                      :data-id="work.id" :data-state="work.stateName"/>
         </draggable>
       </div>
@@ -345,6 +346,11 @@ export default {
     onWorkDetail (work) {
       // this.drawer = true
       this.workDetail = work
+    },
+    onWorkArchived (archivedWork) {
+      if (archivedWork) {
+        this.loadBoardData()
+      }
     },
     onCloseDetail () {
       // this.drawer = false

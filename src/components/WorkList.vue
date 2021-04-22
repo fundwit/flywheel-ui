@@ -12,6 +12,7 @@
       </el-table-column>
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
+          <span class="circle" v-if="scope.row.archivedTime">档</span>
           <span v-if="!scope.row.isEditing">
             <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.name }}</router-link>
           </span>
@@ -110,5 +111,22 @@ li {
 }
 a {
   color: #42b983;
+}
+.circle {
+  border: 1.5px solid #1E90FF;
+  color: #1E90FF;
+  font-size: 16px;
+  border-radius: 100%;
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  line-height: 28px;
+  background-color: #FFF;
+  text-align: center;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 </style>
