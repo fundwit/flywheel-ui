@@ -17,7 +17,7 @@
               <i :class="workflow.themeIcon ? workflow.themeIcon : 'el-icon-s-claim'"/>
               {{workflow.name}}
             </el-tag>
-            <span> #{{work.id}}</span>
+            <span> {{ work.identifier }} </span>
           </div>
 
           <div style="flex-grow: 1; padding: 10px; font-size: 1.0rem">

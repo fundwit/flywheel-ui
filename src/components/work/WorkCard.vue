@@ -9,8 +9,8 @@
           {{workflow.name}}
         </el-tag>
       </div>
-      <div class="work_id drag-handler" style="flex-grow: 1;">
-        <span>#{{work.id}}</span>
+      <div class="work_id drag-handler" style="flex-grow: 1; font-size: 0.8rem">
+        <span>{{ work.identifier }}</span>
       </div>
       <div class="work_action" style="padding-right: 6px">
         <el-dropdown size="small">

@@ -10,6 +10,11 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column prop="identifier" label="标识" width="80px">
+        <template slot-scope="scope">
+          <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.identifier }}</router-link>
+        </template>
+      </el-table-column>
       <el-table-column prop="name" label="名称">
         <template slot-scope="scope">
           <span class="circle" v-if="scope.row.archivedTime">档</span>
@@ -19,11 +24,11 @@
           <el-input v-if="scope.row.isEditing" v-model="editingWork.name" placeholder="请输入内容"></el-input>
         </template>
       </el-table-column>
-      <el-table-column prop="stateName" label="状态">
+      <el-table-column prop="stateName" label="状态" width="120px">
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180">
       </el-table-column>
-      <el-table-column prop="action" label="操作">
+      <el-table-column prop="action" label="操作" width="180px">
         <template slot-scope="scope">
           <el-button v-if="!scope.row.isEditing" @click="onEditWork(scope)" type="text" size="small">编辑</el-button>
           <el-button v-if="scope.row.isEditing" @click="onSaveEdit(scope)" type="text" size="small">保存</el-button>
