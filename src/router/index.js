@@ -36,6 +36,11 @@ const routes = [
     path: '/workflows/:id',
     name: 'WorkflowDetail',
     component: () => import('../pages/WorkflowDetail.vue')
+  },
+  {
+    path: '/me',
+    name: 'UserHome',
+    component: () => import('../userprofile/UserHome')
   }
 ]
 

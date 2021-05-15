@@ -142,6 +142,10 @@ export class FlywheelClient {
     return axios.get(this.withPath(`/v1/work-process-steps?workId=${workId}`), {})
       .then(r => r.data)
   }
+
+  async changePassword (changes) {
+    return axios.put(this.withPath('/v1/session-users/basic-auths'), changes)
+  }
 }
 
 export const client = new FlywheelClient('/api')

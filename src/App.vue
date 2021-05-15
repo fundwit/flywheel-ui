@@ -30,7 +30,14 @@
 
         <el-col :span="6">
           <span style="float: right" v-if="$store.state.isAuthenticated">
-            <span><i class="el-icon-user"/> {{$store.state.securityContext.identity.name}}</span>
+            <span><i class="el-icon-set-up"/>Admin</span>
+
+            <el-divider direction="vertical"/>
+
+            <router-link :to="{ name: 'UserHome'}">
+              <i class="el-icon-user"/> {{$store.state.securityContext.identity.name}}
+            </router-link>
+
             <el-divider direction="vertical"/>
             <a href="javascript:void(0)" @click="onLogout"><i class="el-icon-switch-button"/> logout</a>
           </span>
