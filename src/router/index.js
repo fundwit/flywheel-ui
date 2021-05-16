@@ -41,6 +41,33 @@ const routes = [
     path: '/me',
     name: 'UserHome',
     component: () => import('../userprofile/UserHome')
+  },
+  {
+    path: '/admin',
+    name: 'AdminHome',
+    component: () => import('../admin/AdminHome'),
+    children: [
+      {
+        path: 'metrics',
+        name: 'Metrics',
+        component: () => import('../admin/pages/Metrics')
+      },
+      {
+        path: 'groups',
+        name: 'GroupManage',
+        component: () => import('../admin/pages/GroupManage')
+      },
+      {
+        path: 'users',
+        name: 'UserManage',
+        component: () => import('../admin/pages/UserManage')
+      },
+      {
+        path: 'notifications',
+        name: 'NotificationManage',
+        component: () => import('../admin/pages/NotificationManage')
+      }
+    ]
   }
 ]
 

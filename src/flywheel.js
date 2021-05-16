@@ -146,6 +146,14 @@ export class FlywheelClient {
   async changePassword (changes) {
     return axios.put(this.withPath('/v1/session-users/basic-auths'), changes)
   }
+
+  async queryUsers () {
+    return axios.get(this.withPath('/v1/users'), {})
+  }
+
+  async createUser (creation) {
+    return axios.post(this.withPath('/v1/users'), creation).then(r => r.data)
+  }
 }
 
 export const client = new FlywheelClient('/api')

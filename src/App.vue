@@ -30,7 +30,9 @@
 
         <el-col :span="6">
           <span style="float: right" v-if="$store.state.isAuthenticated">
-            <span><i class="el-icon-set-up"/>Admin</span>
+            <router-link :to="{ name: 'AdminHome'}">
+              <i class="el-icon-set-up"/> Admin
+            </router-link>
 
             <el-divider direction="vertical"/>
 
