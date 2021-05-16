@@ -30,11 +30,12 @@
 
         <el-col :span="6">
           <span style="float: right" v-if="$store.state.isAuthenticated">
-            <router-link :to="{ name: 'AdminHome'}">
-              <i class="el-icon-set-up"/> Admin
-            </router-link>
-
-            <el-divider direction="vertical"/>
+            <span v-if="$store.state.securityContext.perms.indexOf('system:admin') >= 0">
+              <router-link :to="{ name: 'AdminHome'}">
+                <i class="el-icon-set-up"/> Admin
+              </router-link>
+              <el-divider direction="vertical"/>
+            </span>
 
             <router-link :to="{ name: 'UserHome'}">
               <i class="el-icon-user"/> {{$store.state.securityContext.identity.name}}
