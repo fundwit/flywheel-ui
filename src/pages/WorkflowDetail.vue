@@ -39,7 +39,7 @@ export default {
     }
   },
   mounted () {
-    this.$store.commit(statesConst.currentGroupId, null)
+    this.$store.commit(statesConst.currentProjectId, null)
     this.id = this.$route.params.id
     this.loadWorkflowDetail()
   },
@@ -54,7 +54,7 @@ export default {
       client.detailWorkflow(this.id).then((resp) => {
         vue.workflow = resp
         // vue.statesTransition = _.groupBy(vue.workflow.stateMachine.transitions, transition => transition.from)
-        this.$store.commit(statesConst.currentGroupId, vue.workflow.groupId)
+        this.$store.commit(statesConst.currentProjectId, vue.workflow.projectId)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {
@@ -63,7 +63,7 @@ export default {
     },
     onWorkflowDeleted (deletedWorkflow) {
       if (deletedWorkflow) {
-        this.$router.push({ name: 'WorkflowList', query: { projectId: deletedWorkflow.groupId } })
+        this.$router.push({ name: 'WorkflowList', query: { projectId: deletedWorkflow.projectId } })
       }
     }
   }

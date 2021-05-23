@@ -1,5 +1,5 @@
 
 export default {
   mutateSecurityContext: 'mutateSecurityContext',
-  currentGroupId: 'currentGroupId'
+  currentProjectId: 'currentProjectId'
 }

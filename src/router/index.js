@@ -38,6 +38,11 @@ const routes = [
     component: () => import('../pages/WorkflowDetail.vue')
   },
   {
+    path: '/projects/:id',
+    name: 'ProjectDetail',
+    component: () => import('../pages/ProjectDetailPage.vue')
+  },
+  {
     path: '/me',
     name: 'UserHome',
     component: () => import('../userprofile/UserHome')
@@ -53,9 +58,9 @@ const routes = [
         component: () => import('../admin/pages/Metrics')
       },
       {
-        path: 'groups',
-        name: 'GroupManage',
-        component: () => import('../admin/pages/GroupManage')
+        path: 'projects',
+        name: 'ProjectManage',
+        component: () => import('../admin/pages/ProjectManage')
       },
       {
         path: 'users',

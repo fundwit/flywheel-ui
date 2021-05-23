@@ -45,8 +45,8 @@ export class FlywheelClient {
     return axios.get(this.withPath('/me'), form).then(r => r.data)
   }
 
-  async queryWorkflows (groupId) {
-    return axios.get(this.withPath(`/v1/workflows?groupId=${groupId}`), {})
+  async queryWorkflows (projectId) {
+    return axios.get(this.withPath(`/v1/workflows?projectId=${projectId}`), {})
       .then(r => r.data)
   }
 
@@ -116,13 +116,13 @@ export class FlywheelClient {
       .then(r => r.data)
   }
 
-  async queryWorks (groupId) {
-    return axios.get(this.withPath(`/v1/works?groupId=${groupId}`), {})
+  async queryWorks (projectId) {
+    return axios.get(this.withPath(`/v1/works?projectId=${projectId}`), {})
       .then(r => r.data)
   }
 
-  async queryBacklog (groupId) {
-    return axios.get(this.withPath(`/v1/works?groupId=${groupId}&stateCategory=1&stateCategory=2`), {})
+  async queryBacklog (projectId) {
+    return axios.get(this.withPath(`/v1/works?projectId=${projectId}&stateCategory=1&stateCategory=2`), {})
       .then(r => r.data)
   }
 
@@ -153,6 +153,18 @@ export class FlywheelClient {
 
   async createUser (creation) {
     return axios.post(this.withPath('/v1/users'), creation).then(r => r.data)
+  }
+
+  async queryProjects () {
+    return axios.get(this.withPath('/v1/projects'), {})
+  }
+
+  async createProject (creation) {
+    return axios.post(this.withPath('/v1/projects'), creation).then(r => r.data)
+  }
+
+  async queryProjectMembers (projectId) {
+    return axios.get(this.withPath('/v1/project-members?projectId=' + projectId), {})
   }
 }
 

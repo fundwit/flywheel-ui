@@ -5,9 +5,9 @@
         <el-input v-model="creatingWork.name" placeholder="input the name of this workflow"></el-input>
       </el-form-item>
       <el-form-item label="Project">
-        <el-select disabled v-model="creatingWork.groupId" placeholder="select the project which this workflow is belong to">
-          <el-option v-for="item in $store.state.securityContext.groupRoles"
-                     :key="item.groupId" :label="item.groupName" :value="item.groupId">
+        <el-select disabled v-model="creatingWork.projectId" placeholder="select the project which this workflow is belong to">
+          <el-option v-for="item in $store.state.securityContext.projectRoles"
+                     :key="item.projectId" :label="item.projectName" :value="item.projectId">
           </el-option>
         </el-select>
       </el-form-item>
@@ -58,7 +58,7 @@ export default {
     return {
       creatingWork: {
         name: '',
-        groupId: this.selectedProjectId,
+        projectId: this.selectedProjectId,
         workflow: {},
 
         initialState: null,
@@ -76,7 +76,7 @@ export default {
       this.$set(this.creatingWork, 'workflow', val)
     },
     onCreateWork () {
-      if (!this.creatingWork || !this.creatingWork.name || !this.creatingWork.groupId || !this.creatingWork.workflow || !this.creatingWork.workflow.id) {
+      if (!this.creatingWork || !this.creatingWork.name || !this.creatingWork.projectId || !this.creatingWork.workflow || !this.creatingWork.workflow.id) {
         this.$notify.error({ title: 'Error', message: '参数错误' })
         return
       }
@@ -85,7 +85,7 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.createWork({
         name: this.creatingWork.name,
-        groupId: this.creatingWork.groupId,
+        projectId: this.creatingWork.projectId,
         flowId: this.creatingWork.workflow.id,
         initialStateName: this.creatingWork.initialState.name,
         priorityLevel: this.creatingWork.priorityLevel

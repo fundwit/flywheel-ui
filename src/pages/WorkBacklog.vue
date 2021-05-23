@@ -72,18 +72,18 @@ export default {
     },
     loadWorks () {
       this.clear()
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
+      const projectId = this.$route.query.projectId
+      if (!projectId) {
         return
       }
       const vue = this
 
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.queryWorkflows(groupId).then(resp => {
+      client.queryWorkflows(projectId).then(resp => {
         _.forEach(resp, workflow => {
           vue.workflowIndex[workflow.id] = workflow
         })
-        return client.queryBacklog(groupId)
+        return client.queryBacklog(projectId)
       }).then((resp) => {
         vue.total = resp.total
         vue.works = resp.data // vue.$set('works', response.data.data)

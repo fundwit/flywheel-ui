@@ -18,17 +18,17 @@ export default {
     }
   },
   mounted () {
-    this.$store.commit(statesConst.currentGroupId, null)
+    this.$store.commit(statesConst.currentProjectId, null)
   },
   methods: {
     onWorkDeleted (deletedWork) {
       if (deletedWork) {
-        this.$router.push({ name: 'WorkBacklog', query: { projectId: deletedWork.groupId } })
+        this.$router.push({ name: 'WorkBacklog', query: { projectId: deletedWork.projectId } })
       }
     },
     onWorkLoaded (work) {
       if (work) {
-        this.$store.commit(statesConst.currentGroupId, work.groupId)
+        this.$store.commit(statesConst.currentProjectId, work.projectId)
       }
     }
   }

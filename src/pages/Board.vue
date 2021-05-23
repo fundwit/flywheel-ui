@@ -159,13 +159,13 @@ export default {
     loadBoardData () {
       this.clear()
 
-      const groupId = this.$route.query.projectId
-      if (!groupId) {
+      const projectId = this.$route.query.projectId
+      if (!projectId) {
         return
       }
 
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      this.loadWorksAndStates(groupId).catch((error) => {
+      this.loadWorksAndStates(projectId).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {
         mask.close()
@@ -190,9 +190,9 @@ export default {
         'state-invalid': state.canTransitionTo === false
       }
     },
-    loadWorksAndStates (groupId) {
+    loadWorksAndStates (projectId) {
       const vue = this
-      return client.queryWorks(groupId).then((resp) => {
+      return client.queryWorks(projectId).then((resp) => {
         const queriedGroupedWorks = _.groupBy(resp.data, (v) => v.stateCategory + '-' + v.stateName)
         const workflowIds = {}
         _.forEach(resp.data, v => {

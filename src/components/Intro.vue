@@ -42,7 +42,7 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Logging', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.login(this.loginForm).then(secCtx => {
         vue.$store.commit(statesConst.mutateSecurityContext, secCtx)
-        this.$router.push({ name: 'WorkBacklog', query: { projectId: vue.$store.state.defaultGroupId } })
+        this.$router.push({ name: 'Dashboard' })
       }).catch(error => {
         console.log(error)
         this.$notify.error({ title: 'Error', message: 'failed to login' })

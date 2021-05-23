@@ -7,14 +7,18 @@
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
             <span> <i class="el-icon-folder-opened"/> Project </span>
-            <el-select size="mini" :value="projectId" :disabled="!$route.query.projectId" @change="onCurrentProjectChange">
-              <el-option
-                v-for="item in $store.state.securityContext.groupRoles"
-                :key="item.groupId"
-                :label="item.groupName"
-                :value="item.groupId">
-              </el-option>
-            </el-select>
+
+            <el-dropdown size="mini" trigger="click">
+              <span class="el-dropdown-link">
+                {{this.$store.state.currentProject.projectName}} <i class="el-icon-arrow-down el-icon--right"/>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item v-for="item in $store.state.securityContext.projectRoles"
+                    :key="item.projectId" @click.native="onCurrentProjectChange(item.projectId)">
+                  {{item.projectName}}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </span>
         </el-col>
 
@@ -25,6 +29,8 @@
             <router-link :to="{ name: 'Board', query: { projectId: projectId } }"><i class="el-icon-data-analysis"/> Board</router-link>
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'WorkflowList', query: { projectId: projectId } }"><i class="el-icon-share"/> Workflows</router-link>
+            <el-divider direction="vertical"/>
+            <router-link :to="{ name: 'ProjectDetail', params: { id: projectId }}"><i class="el-icon-menu"/> Preference</router-link>
           </span>
         </el-col>
 
@@ -49,7 +55,7 @@
     </div>
 
     <Intro v-if="!$store.state.isAuthenticated && !isLoading"/>
-    <GroupGuide v-if="$store.state.isAuthenticated && (!$store.state.securityContext.groupRoles || $store.state.securityContext.groupRoles.length === 0)"/>
+    <ProjectGuide v-if="$store.state.isAuthenticated && (!$store.state.securityContext.projectRoles || $store.state.securityContext.projectRoles.length === 0)"/>
     <router-view :class="{hidden: !$store.state.isAuthenticated }"/>
   </div>
 </template>
@@ -58,14 +64,14 @@
 import client from './flywheel'
 import statesConst from './states/statesConst'
 import Intro from '@/components/Intro.vue'
-import GroupGuide from './components/GroupGuide.vue'
+import ProjectGuide from './components/ProjectGuide.vue'
 import _ from 'lodash'
 
 export default {
   name: 'App',
   components: {
     Intro,
-    GroupGuide
+    ProjectGuide
   },
   data () {
     return {
@@ -74,15 +80,21 @@ export default {
   },
   computed: {
     projectId () {
-      if (this.$route.query.projectId) {
-        return this.$route.query.projectId
-      } else {
-        return this.$store.state.currentGroupId
-      }
+      return this.$store.state.currentProject.projectId
     }
   },
   mounted () {
     this.authWithLastToken()
+  },
+  watch: {
+    projectId (val) {
+      console.log(`current project id: ${val}`)
+      if (_.includes(['WorkBacklog', 'Board', 'WorkflowList'], this.$route.name) && this.$route.query.projectId !== val) {
+        this.$router.push({ name: this.$route.name, query: { projectId: val } })
+      } else if (_.includes(['ProjectDetail'], this.$route.name) && this.$route.params.id !== val) {
+        this.$router.push({ name: this.$route.name, params: { id: val } })
+      }
+    }
   },
   methods: {
     onLogout () {
@@ -95,35 +107,30 @@ export default {
         mask.close()
       })
     },
-    onCurrentProjectChange (val) {
-      this.$router.push({ name: this.$route.name, query: { projectId: val } })
-    },
-    redirectToAvailedProject (route) {
-      if (this.$route.query.projectId !== '' && _.includes(['WorkBacklog', 'Board', 'WorkflowList'], this.$route.name)) {
-        if (!_.find(this.$store.state.securityContext.groupRoles, i => i.groupId === route.query.projectId)) {
-          if (this.$store.state.securityContext.groupRoles.length > 0) {
-            this.$router.replace({ name: route.name, query: { projectId: this.$store.state.defaultGroupId } })
-          } else {
-            this.$router.replace({ name: route.name, query: { projectId: '' } })
-          }
-        }
-      }
+    onCurrentProjectChange (projectId) {
+      this.$store.commit(statesConst.currentProjectId, projectId)
+      // this.$router.push({ name: this.$route.name, query: { projectId: projectId } })
     },
     authWithLastToken () {
       const vue = this
       if (!this.$store.state.isAuthenticated) {
         const mask = this.$loading({ lock: true, text: 'Authenticating', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
         client.queryIdentity().then(secCtx => {
+          let currentProjectId = null
+          if (_.includes(['WorkBacklog', 'Board', 'WorkflowList'], this.$route.name) && this.$route.query.projectId !== this.$store.state.currentProject.projectId) {
+            currentProjectId = this.$route.query.projectId
+          } else if (_.includes(['ProjectDetail'], this.$route.name) && this.$route.params.id !== this.$store.state.currentProject.projectId) {
+            currentProjectId = this.$route.params.id
+          }
+
+          secCtx.currentProjectId = currentProjectId
           vue.$store.commit(statesConst.mutateSecurityContext, secCtx)
-          vue.redirectToAvailedProject(vue.$route)
         }).catch(() => {
           console.log('no valid token, login is required')
         }).finally(() => {
           mask.close()
           this.isLoading = false
         })
-      } else {
-        vue.redirectToAvailedProject(vue.$route)
       }
     }
   }

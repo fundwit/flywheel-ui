@@ -16,9 +16,9 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Project">
-        <el-select disabled v-model="editingWorkflow.groupId" placeholder="select the project which this workflow is belong to">
-          <el-option v-for="item in $store.state.securityContext.groupRoles"
-                     :key="item.groupId" :label="item.groupName" :value="item.groupId">
+        <el-select disabled v-model="editingWorkflow.projectId" placeholder="select the project which this workflow is belong to">
+          <el-option v-for="item in $store.state.securityContext.projectRoles"
+                     :key="item.projectId" :label="item.projectName" :value="item.projectId">
           </el-option>
         </el-select>
       </el-form-item>
@@ -44,7 +44,7 @@ export default {
       stateCategories: stateCategories,
       editingWorkflow: {
         name: '',
-        groupId: this.selectedProjectId,
+        projectId: this.selectedProjectId,
         themeColor: '',
         themeIcon: ''
       },
@@ -71,7 +71,7 @@ export default {
       this.$emit('action-result', null)
     },
     onSaveWorkflow () {
-      if (!this.editingWorkflow || !this.editingWorkflow.name || !this.editingWorkflow.groupId) {
+      if (!this.editingWorkflow || !this.editingWorkflow.name || !this.editingWorkflow.projectId) {
         this.$notify.error({ title: 'Error', message: '参数错误' })
         return
       }

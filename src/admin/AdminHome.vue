@@ -7,9 +7,9 @@
             <i class="el-icon-pie-chart"></i>
             <span slot="title">Metrics</span>
           </el-menu-item>
-          <el-menu-item index="/admin/groups">
+          <el-menu-item index="/admin/projects">
             <i class="el-icon-user"></i>
-            <span slot="title">Groups</span>
+            <span slot="title">Projects</span>
           </el-menu-item>
           <el-menu-item index="/admin/users">
             <i class="el-icon-user"></i>

@@ -1,7 +1,6 @@
 <template>
   <div>
-    User Manage
-
+    <div>User Manage</div>
     <el-button type="primary" size="mini" @click="onCreateUserDialog" icon="el-icon-circle-plus-outline">添加用户</el-button>
     <el-table :data="users" style="width: 100%">
       <el-table-column

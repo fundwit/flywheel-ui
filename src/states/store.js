@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import createLogger from 'vuex/dist/logger'
 import statesConst from './statesConst'
 import axios from 'axios'
+import _ from 'lodash'
 
 Vue.use(Vuex)
 
@@ -13,20 +14,37 @@ const store = new Vuex.Store({
   plugins: debug ? [createLogger] : [],
 
   state: {
-    currentGroupId: null,
+    currentProject: {
+      id: null,
+      name: null,
+      role: null
+    },
 
-    defaultGroupId: null,
     isAuthenticated: false,
     securityContext: {
       identity: { },
       perms: [],
-      groupRoles: [],
+      projectRoles: [],
       token: null
     }
   },
   mutations: {
-    [statesConst.currentGroupId] (state, groupId) {
-      state.currentGroupId = groupId
+    [statesConst.currentProjectId] (state, projectId) {
+      const projectRole = _.find(state.securityContext.projectRoles, pr => pr.projectId === projectId)
+      if (projectRole) {
+        state.currentProject = {
+          projectId: projectRole.projectId,
+          projectName: projectRole.projectName,
+          role: projectRole.role
+        }
+      } else {
+        state.currentProject = {
+          projectId: null,
+          projectName: null,
+          role: null
+        }
+      }
+      console.log(`current project is "${state.currentProject.projectName}"`)
     },
 
     [statesConst.mutateSecurityContext] (state, secCtx) {
@@ -34,18 +52,37 @@ const store = new Vuex.Store({
         state.securityContext = {
           identity: { },
           perms: [],
-          groupRoles: [],
+          projectRoles: [],
           token: null
         }
         state.isAuthenticated = false
-        state.defaultGroupId = null
         return
       }
 
       state.securityContext = secCtx
       state.isAuthenticated = true
-      if (secCtx.groupRoles && secCtx.groupRoles.length > 0) {
-        state.defaultGroupId = secCtx.groupRoles[0].groupId
+      if (!state.currentProject.projectId && secCtx.projectRoles && secCtx.projectRoles.length > 0) {
+        if (secCtx.currentProjectId) {
+          const projectRole = _.find(state.securityContext.projectRoles, pr => pr.projectId === secCtx.currentProjectId)
+          if (projectRole) {
+            state.currentProject = {
+              projectId: projectRole.projectId,
+              projectName: projectRole.projectName,
+              role: projectRole.role
+            }
+          }
+        }
+
+        if (!state.currentProject.projectId) {
+          const defaultProject = secCtx.projectRoles[0]
+          state.currentProject = {
+            projectId: defaultProject.projectId,
+            projectName: defaultProject.projectName,
+            role: defaultProject.role
+          }
+        }
+
+        console.log(`current project reset to ${state.currentProject.projectName}`)
       }
     }
   },
@@ -64,10 +101,10 @@ axios.interceptors.response.use(res => {
     store.commit(statesConst.mutateSecurityContext, {
       identity: { },
       perms: [],
-      groupRoles: [],
+      projectRoles: [],
       token: null
     })
-    store.commit(statesConst.currentGroupId, null)
+    store.commit(statesConst.currentProjectId, null)
   }
   return Promise.reject(err)
 })

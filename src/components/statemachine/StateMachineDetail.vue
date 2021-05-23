@@ -112,7 +112,7 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.detailWorkflow(this.id).then((resp) => {
         vue.stateMachine = resp.stateMachine
-        this.$store.commit(statesConst.currentGroupId, resp.groupId)
+        this.$store.commit(statesConst.currentProjectId, resp.projectId)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: '数据加载失败' + error })
       }).finally(() => {

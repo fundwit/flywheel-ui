@@ -16,9 +16,9 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Project">
-        <el-select disabled v-model="creatingWorkflow.groupId" placeholder="select the project which this workflow is belong to">
-          <el-option v-for="item in $store.state.securityContext.groupRoles"
-                     :key="item.groupId" :label="item.groupName" :value="item.groupId">
+        <el-select disabled v-model="creatingWorkflow.projectId" placeholder="select the project which this workflow is belong to">
+          <el-option v-for="item in $store.state.securityContext.projectRoles"
+                     :key="item.projectId" :label="item.projectName" :value="item.projectId">
           </el-option>
         </el-select>
       </el-form-item>
@@ -54,7 +54,7 @@ export default {
       stateCategories: stateCategories,
       creatingWorkflow: {
         name: '',
-        groupId: this.selectedProjectId,
+        projectId: this.selectedProjectId,
         themeColor: randomColor(),
         themeIcon: ''
       },
@@ -74,7 +74,7 @@ export default {
     },
 
     onCreateWorkflow () {
-      if (!this.creatingWorkflow || !this.creatingWorkflow.name || !this.creatingWorkflow.groupId ||
+      if (!this.creatingWorkflow || !this.creatingWorkflow.name || !this.creatingWorkflow.projectId ||
           !this.stateMachine || !this.stateMachine.states || !this.stateMachine.states.length) {
         this.$notify.error({ title: 'Error', message: '参数错误' })
         return
@@ -84,7 +84,7 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.createWorkflow({
         name: this.creatingWorkflow.name,
-        groupId: this.creatingWorkflow.groupId,
+        projectId: this.creatingWorkflow.projectId,
         themeColor: this.creatingWorkflow.themeColor,
         themeIcon: this.creatingWorkflow.themeIcon ? this.creatingWorkflow.themeIcon : 'el-icon-s-opportunity',
         stateMachine: this.stateMachine

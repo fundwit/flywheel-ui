@@ -99,13 +99,13 @@ export default {
       return this.$route.query.projectId
     },
     loadWorkflows () {
-      const groupId = this.selectedProjectId()
-      if (!groupId) {
+      const projectId = this.selectedProjectId()
+      if (!projectId) {
         return
       }
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.queryWorkflows(groupId).then((resp) => {
+      client.queryWorkflows(projectId).then((resp) => {
         vue.total = resp.length
         vue.workflows = resp
       }).catch((error) => {

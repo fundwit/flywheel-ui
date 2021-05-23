@@ -23,7 +23,7 @@ import _ from 'lodash'
 export default {
   name: 'WorkflowSelector',
   props: {
-    groupId: null
+    projectId: null
   },
   data () {
     return {
@@ -34,10 +34,10 @@ export default {
     }
   },
   mounted () {
-    this.loadWorkflows(this.groupId)
+    this.loadWorkflows(this.projectId)
   },
   watch: {
-    groupId (val) {
+    projectId (val) {
       this.loadWorkflows(val)
     }
   },
@@ -45,13 +45,13 @@ export default {
     onWorkflowSelected (val) {
       this.$emit('workflowSelected', _.find(this.workflows, w => w.id === val))
     },
-    loadWorkflows (groupId) {
-      if (!groupId) {
-        this.loadingError = 'group id is empty'
+    loadWorkflows (projectId) {
+      if (!projectId) {
+        this.loadingError = 'project id is empty'
         return
       }
       this.isLoading = true
-      client.queryWorkflows(this.groupId).then(resp => {
+      client.queryWorkflows(this.projectId).then(resp => {
         this.workflows = resp
       }).catch(err => {
         this.loadingError = err
