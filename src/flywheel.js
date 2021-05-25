@@ -166,6 +166,14 @@ export class FlywheelClient {
   async queryProjectMembers (projectId) {
     return axios.get(this.withPath('/v1/project-members?projectId=' + projectId), {})
   }
+
+  async deleteProjectMember (projectId, memberId) {
+    return axios.delete(this.withPath(`/v1/project-members?projectId=${projectId}&memberId=${memberId}`), {})
+  }
+
+  async addProjectMember (creation) {
+    return axios.post(this.withPath('/v1/project-members'), creation)
+  }
 }
 
 export const client = new FlywheelClient('/api')

@@ -14,15 +14,14 @@ export default {
     onDeleteConfirm () {
       const vue = this
       const deleteOutput = {}
-      this.$prompt(`user "${this.projectMember.name}" will be leave project. Input user name to confirm`, 'Action Confirm', {
+      this.$prompt(`user "${this.projectMember.memberName}" will be leave project. Input member name to confirm`, 'Action Confirm', {
         confirmButtonText: 'Submit',
         cancelButtonText: 'Cancel',
-        inputPattern: this.projectMember.name,
+        inputValidator: v => v === this.projectMember.memberName,
         inputErrorMessage: 'invalid input'
       }).then(({ value }) => {
-        if (value === this.projectMember.name) {
-          return client.deleteProjectMember(vue.projectMember.projectId, vue.projectMember.userId).then(resp => {
-            ....
+        if (value === this.projectMember.memberName) {
+          return client.deleteProjectMember(vue.projectMember.projectId, vue.projectMember.memberId).then(resp => {
             vue.$message({ type: 'success', message: 'delete success' })
             deleteOutput.result = true
           }).catch(err => {
@@ -32,7 +31,7 @@ export default {
       }).catch(() => {
       }).finally(() => {
         if (deleteOutput.result) {
-          vue.$emit('workflowDeleted', vue.workflow)
+          vue.$emit('projectMemberDeleted', vue.projectMember)
         }
       })
     }

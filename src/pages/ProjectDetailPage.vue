@@ -4,6 +4,9 @@
     <div v-if="!this.$route.params.id">project id is not specified</div>
 
     <div>Members</div>
+
+    <el-button v-if="this.$store.state.securityContext.perms" type="primary" size="mini" @click="onCreateProjectMemberDialog" icon="el-icon-circle-plus-outline">添加成员</el-button>
+
     <el-table :data="members" style="width: 100%">
       <el-table-column label="Member" width="300">
         <template slot-scope="scope">
@@ -22,24 +25,33 @@
       </el-table-column>
       <el-table-column label="Actions">
         <template slot-scope="scope">
-          <el-button @click="onEditWorkflowDialog(scope)" type="text" size="small">编辑</el-button>
-          <!-- <workflow-delete v-if="!scope.row.isEditing" :workflow="scope.row" @workflowDeleted="onWorkflowDeleted"/> -->
+          <project-member-delete v-if="!scope.row.isEditing" :projectMember="scope.row" @projectMemberDeleted="onProjectMemberDeleted"/>
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog v-if="showProjectMemberCreatingDialog === true" title="Add Project Member" :visible="true" width="80%"
+               :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+      <project-member-creation :projectId="this.$route.params.id" @action-result="onProjectMemberCreationResult"/>
+    </el-dialog>
   </el-card>
 </template>
 
 <script>
 import client from '../flywheel'
+import ProjectMemberDelete from '../components/projectMember/ProjectMemberDelete'
+import ProjectMemberCreation from '../components/projectMember/ProjectMemberCreation'
 
 export default {
   name: 'ProjectDetailPage',
   components: {
+    ProjectMemberDelete,
+    ProjectMemberCreation
   },
   data () {
     return {
-      members: []
+      members: [],
+      showProjectMemberCreatingDialog: false
     }
   },
   mounted () {
@@ -54,6 +66,13 @@ export default {
     }
   },
   methods: {
+    onCreateProjectMemberDialog () {
+      this.showProjectMemberCreatingDialog = true
+    },
+    onProjectMemberCreationResult () {
+      this.showProjectMemberCreatingDialog = false
+      this.loadProjectMembers()
+    },
     loadProjectMembers () {
       const projectId = this.$route.params.id
       if (!projectId) {
@@ -68,6 +87,11 @@ export default {
       }).finally(() => {
         mask.close()
       })
+    },
+    onProjectMemberDeleted (val) {
+      if (val) {
+        this.loadProjectMembers()
+      }
     }
   }
 }
