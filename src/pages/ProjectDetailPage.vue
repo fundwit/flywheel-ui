@@ -5,7 +5,7 @@
 
     <div>Members</div>
 
-    <el-button v-if="this.$store.state.securityContext.perms" type="primary" size="mini" @click="onCreateProjectMemberDialog" icon="el-icon-circle-plus-outline">添加成员</el-button>
+    <el-button v-if="projectAdmin" type="primary" size="mini" @click="onCreateProjectMemberDialog" icon="el-icon-circle-plus-outline">添加成员</el-button>
 
     <el-table :data="members" style="width: 100%">
       <el-table-column label="Member" width="300">
@@ -25,7 +25,7 @@
       </el-table-column>
       <el-table-column label="Actions">
         <template slot-scope="scope">
-          <project-member-delete v-if="!scope.row.isEditing" :projectMember="scope.row" @projectMemberDeleted="onProjectMemberDeleted"/>
+          <project-member-delete v-if="projectAdmin" :projectMember="scope.row" @projectMemberDeleted="onProjectMemberDeleted"/>
         </template>
       </el-table-column>
     </el-table>
@@ -63,6 +63,11 @@ export default {
         this.loadProjectMembers()
       },
       deep: true
+    }
+  },
+  computed: {
+    projectAdmin () {
+      return this.hasRole('system:admin') || this.hasRole('owner_' + this.$route.params.id)
     }
   },
   methods: {
