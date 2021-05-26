@@ -12,7 +12,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="Workflow">
-        <workflow-selector :group-id="this.$route.query.projectId" @workflowSelected="onWorkflowSelected"/>
+        <workflow-selector :project-id="this.$route.query.projectId" @workflowSelected="onWorkflowSelected"/>
       </el-form-item>
       <el-form-item label="Initial State">
         <span v-if="creatingWork.workflow && creatingWork.workflow.id">
