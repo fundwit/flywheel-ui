@@ -4,6 +4,7 @@ import createLogger from 'vuex/dist/logger'
 import statesConst from './statesConst'
 import axios from 'axios'
 import _ from 'lodash'
+import flywheel from '../flywheel'
 
 Vue.use(Vuex)
 
@@ -88,7 +89,16 @@ const store = new Vuex.Store({
   },
 
   // async dispatch
-  actions: {},
+  actions: {
+    [statesConst.updateSecurityContext] (context) {
+      flywheel.detailSession().then(sec => {
+        context.commit(statesConst.mutateSecurityContext, sec)
+      }).catch((err) => {
+        console.log('unauthenticated: ' + err)
+        context.commit(statesConst.mutateSecurityContext, null)
+      })
+    }
+  },
 
   // sub modules
   modules: {}

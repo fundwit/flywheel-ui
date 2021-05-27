@@ -6,7 +6,7 @@
           <a style="color: dodgerblue"><i class="el-icon-loading"/> FlyWheel</a>
           <span v-if="$store.state.isAuthenticated">
             <el-divider direction="vertical"/>
-            <span> <i class="el-icon-folder-opened"/> Project </span>
+            <span> <i class="el-icon-folder-opened"/> </span>
 
             <el-dropdown size="mini" trigger="click">
               <span class="el-dropdown-link">

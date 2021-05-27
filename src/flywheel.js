@@ -41,6 +41,10 @@ export class FlywheelClient {
     return axios.delete(this.withPath('/v1/sessions')).then(r => r.data)
   }
 
+  async detailSession () {
+    return axios.get(this.withPath('/v1/session')).then(r => r.data)
+  }
+
   async queryIdentity (form) {
     return axios.get(this.withPath('/me'), form).then(r => r.data)
   }
@@ -161,6 +165,10 @@ export class FlywheelClient {
 
   async createProject (creation) {
     return axios.post(this.withPath('/v1/projects'), creation).then(r => r.data)
+  }
+
+  async updateProject (projectId, changes) {
+    return axios.put(this.withPath(`/v1/projects/${projectId}`), changes).then(r => r.data)
   }
 
   async queryProjectMembers (projectId) {

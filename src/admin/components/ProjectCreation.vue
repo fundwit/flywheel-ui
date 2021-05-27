@@ -17,6 +17,7 @@
 
 <script>
 import { client } from '../../flywheel'
+import statesConst from '../../states/statesConst'
 
 export default {
   name: 'ProjectCreation',
@@ -46,6 +47,7 @@ export default {
         identifier: this.projectCreation.identifier
       }).then((resp) => {
         vue.actionResult = resp
+        this.$store.dispatch(statesConst.updateSecurityContext)
         this.$emit('action-result', vue.actionResult)
       }).catch((error) => {
         this.$notify.error({ title: 'Error', message: error })

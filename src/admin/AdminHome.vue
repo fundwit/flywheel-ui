@@ -3,7 +3,7 @@
     <el-row>
       <el-col :span="3">
         <el-menu router>
-          <el-menu-item index="/admin/metrics">
+          <el-menu-item v-if="false" index="/admin/metrics">
             <i class="el-icon-pie-chart"></i>
             <span slot="title">Metrics</span>
           </el-menu-item>
@@ -15,7 +15,7 @@
             <i class="el-icon-user"></i>
             <span slot="title">Users</span>
           </el-menu-item>
-          <el-menu-item index="/admin/notifications">
+          <el-menu-item v-if="false" index="/admin/notifications">
             <i class="el-icon-message"></i>
             <span slot="title">Notifications</span>
           </el-menu-item>
