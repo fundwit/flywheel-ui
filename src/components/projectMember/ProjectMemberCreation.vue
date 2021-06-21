@@ -39,7 +39,7 @@ export default {
         role: ''
       },
       accounts: [],
-      roles: ['manager', 'developer'],
+      roles: ['manager', 'common'],
       actionResult: null
     }
   },

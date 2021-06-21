@@ -41,17 +41,14 @@
       <work-creating-form :selectedProjectId="$route.query.projectId" @action-result="onWorkCreatingResult"/>
     </el-dialog>
 
-<!--    <el-drawer title="我是标题" :visible.sync="drawer" :destroy-on-close="true" :show-close="false" size="80%" :with-header="false" direction="rtl" :before-close="onCloseDetail">-->
-<!--      <div>-->
-<!--        <work-detail/>-->
-<!--      </div>-->
-<!--    </el-drawer>-->
-
     <el-dialog v-if="workDetail" :show-close="true" :visible="true" :close-on-click-modal="false" width="60%" :before-close="onCloseDetail">
       <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted" @workUpdated="onWorkUpdated"/>
     </el-dialog>
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; width: 100%; overflow: auto">
+      <div style="padding: 6px 12px">
+        <member-stats :project-id="this.$route.query.projectId" :workContributions="workContributions"/>
+      </div>
       <div v-for="state in mergedStates" :key="state.category + '-' + state.name">
         <div :id="'col-'+state.name" :class="computeStateHeaderClass(state)" :style="computeStateCategoryHeaderStyle(state)" role="group" :aria-label="state.name"
              style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; overflow: auto">
@@ -78,8 +75,8 @@
                    :group="state.canTransitionTo ? 'enable-drag' : 'disable-drag'" v-model="groupedWorks[state.category + '-' + state.name]" draggable=".item"
                    animation="300" dragClass="dragClass" ghostClass="ghostClass" chosenClass="chosenClass" @start="onStart" @end="onEnd">
           <work-card v-for="work in groupedWorks[state.category + '-' + state.name]" :key="work.name"
-                     :work="work" :workflow="workflowIndex[work.flowId]"
-                     @titleClicked="onWorkDetail" @workArchived="onWorkArchived"
+                     :work="work" :workflow="workflowIndex[work.flowId]" :contributions="workContributions[work.identifier]"
+                     @titleClicked="onWorkDetail" @workArchived="onWorkArchived" @workContributionChanged="onWorkContributionChanged"
                      :data-id="work.id" :data-state="work.stateName"/>
         </draggable>
       </div>
@@ -96,6 +93,7 @@ import { formatTime, formatTimeDuration } from '../times'
 import WorkDetail from '../components/WorkDetail'
 import WorkCreatingForm from '../components/work/WorkCreatingForm'
 import WorkCard from '../components/work/WorkCard'
+import MemberStats from '../components/kanban/MemberStats'
 import { categoryStyle } from '../themes'
 
 export default {
@@ -103,7 +101,8 @@ export default {
     draggable,
     WorkDetail,
     WorkCreatingForm,
-    WorkCard
+    WorkCard,
+    MemberStats
   },
   data () {
     return {
@@ -113,6 +112,7 @@ export default {
 
       draggedWork: null,
       groupedWorks: {},
+      workContributions: {},
       mergedStates: [],
       workflowIndex: {},
       totalFilteredWorksCount: 0,
@@ -154,6 +154,7 @@ export default {
       this.groupedWorks = {}
       this.mergedStates = []
       this.workflowIndex = {}
+      this.workContributions = {}
       this.totalFilteredWorksCount = 0
     },
     loadBoardData () {
@@ -246,6 +247,52 @@ export default {
             vue.$set(vue.groupedWorks, stateKey, filteredWorks)
             vue.totalFilteredWorksCount += filteredWorks.length
           })
+        }).then(() => {
+          this.loadWorkContributors()
+        })
+      })
+    },
+    loadWorkContributors () {
+      const vue = this
+      const workKeys = []
+
+      _.forEach(this.groupedWorks, (stateWorks) => {
+        _.forEach(stateWorks, (work) => {
+          workKeys.push(work.identifier)
+        })
+      })
+      if (!workKeys.length) {
+        this.workContributions = {}
+        return
+      }
+
+      const userStatsIndex = {}
+      const workAggregateIndex = {}
+      client.queryContributions({ workKeys: workKeys }).then(data => {
+        _.forEach(data, (c) => {
+          if (!c.effective) {
+            return
+          }
+
+          // group by work
+          let workAggregate = workAggregateIndex[c.workKey]
+          if (!workAggregate) {
+            workAggregate = []
+            workAggregateIndex[c.workKey] = workAggregate
+          }
+          workAggregate.push(c)
+
+          // group by user
+          let userStats = userStatsIndex[c.contributorId]
+          if (!userStats) {
+            userStats = []
+            userStatsIndex[c.contributorId] = userStats
+          }
+          userStats.push(c)
+        })
+
+        _.forEach(workAggregateIndex, (contributions, workKey) => {
+          vue.$set(vue.workContributions, workKey, contributions)
         })
       })
     },
@@ -375,6 +422,9 @@ export default {
           console.log(`work ${updatedWork.id} not found in ${key} group`)
         }
       }
+    },
+    onWorkContributionChanged () {
+      this.loadWorkContributors()
     },
     onCreateWorkDialog () {
       this.showWorkCreatingDialog = true

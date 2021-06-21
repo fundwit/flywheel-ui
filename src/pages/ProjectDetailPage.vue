@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     projectAdmin () {
-      return this.hasRole('system:admin') || this.hasRole('owner_' + this.$route.params.id)
+      return this.hasRole('system:admin') || this.hasRole('manager_' + this.$route.params.id)
     }
   },
   methods: {

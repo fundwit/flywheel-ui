@@ -182,6 +182,18 @@ export class FlywheelClient {
   async addProjectMember (creation) {
     return axios.post(this.withPath('/v1/project-members'), creation)
   }
+
+  async queryContributions (query) {
+    return axios.post(this.withPath('/v1/contributor-queries'), query).then(r => r.data)
+  }
+
+  async beginContribution (workKey, contributorId) {
+    return axios.post(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId })
+  }
+
+  async finishContribution (workKey, contributorId, effective) {
+    return axios.put(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId, effective: effective })
+  }
 }
 
 export const client = new FlywheelClient('/api')
