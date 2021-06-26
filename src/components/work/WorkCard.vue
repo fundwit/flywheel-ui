@@ -47,8 +47,8 @@
         <div style="padding-right: 6px">
           <i class="el-icon-s-custom"/>
         </div>
-        <avatar v-for="c in contributions" :key="c.id" :size="20" :username="c.contributorName" :title="c.contributorName"
-           style="margin-right: 2px" :rounded="c.endTime != null"/>
+        <user-avatar v-for="c in contributions" :key="c.id" :rounded="c.endTime != null" style="margin-right: 2px"
+          :userId="c.contributorId" :username="c.contributorName"/>
       </div>
 
       <div class="work_trace_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
@@ -74,14 +74,14 @@
 <script>
 import { formatTime, formatTimeDuration } from '../../times'
 import { categoryStyle } from '../../themes'
-import Avatar from 'vue-avatar'
+import UserAvatar from '../../userprofile/UserAvatar'
 import VClamp from 'vue-clamp'
 import client from '../../flywheel'
 
 export default {
   name: 'WorkCard',
   components: {
-    Avatar,
+    UserAvatar,
     VClamp
   },
   props: {

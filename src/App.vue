@@ -44,7 +44,11 @@
             </span>
 
             <router-link :to="{ name: 'UserHome'}">
-              <i class="el-icon-user"/> {{$store.state.securityContext.identity.name}}
+              <user-avatar :rounded="true" :size="25" style="display: inline-block; margin-bottom: -8px"
+                :userId="$store.state.securityContext.identity.id"
+                :username="$store.state.securityContext.identity.name"/>
+
+              {{$store.state.securityContext.identity.name}}
             </router-link>
 
             <el-divider direction="vertical"/>
@@ -66,12 +70,14 @@ import statesConst from './states/statesConst'
 import Intro from '@/components/Intro.vue'
 import ProjectGuide from './components/ProjectGuide.vue'
 import _ from 'lodash'
+import UserAvatar from './userprofile/UserAvatar.vue'
 
 export default {
   name: 'App',
   components: {
     Intro,
-    ProjectGuide
+    ProjectGuide,
+    UserAvatar
   },
   data () {
     return {
@@ -81,6 +87,9 @@ export default {
   computed: {
     projectId () {
       return this.$store.state.currentProject.projectId
+    },
+    avatarUrl () {
+      return client.withPath('/v1/account-avatars/' + this.$store.state.securityContext.identity.id)
     }
   },
   mounted () {

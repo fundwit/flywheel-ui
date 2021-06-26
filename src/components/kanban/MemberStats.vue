@@ -9,8 +9,9 @@
       </el-table-column>
       <el-table-column prop="memberName" width="50">
         <template slot-scope="scope">
-          <avatar :size="20" :username="scope.row.memberName" :title="scope.row.memberName"
-            style="margin-right: 2px" :rounded="memberWorkStats[scope.row.memberId].wipCount === 0"/>
+          <user-avatar :rounded="memberWorkStats[scope.row.memberId].wipCount === 0"
+                :userId="scope.row.memberId"
+                :username="scope.row.memberName"/>
         </template>
       </el-table-column>
       <el-table-column prop="wipCount" label="WIP" width="50">
@@ -30,12 +31,12 @@
 <script>
 import { client } from '../../flywheel'
 import _ from 'lodash'
-import Avatar from 'vue-avatar'
+import UserAvatar from '../../userprofile/UserAvatar'
 
 export default {
   name: 'MemberStats',
   components: {
-    Avatar
+    UserAvatar
   },
   props: {
     projectId: null,
