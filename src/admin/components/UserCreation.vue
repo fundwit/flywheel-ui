@@ -10,6 +10,9 @@
       <el-form-item label="Confirm Password">
         <el-input show-password v-model="userCreation.secretConfirm"></el-input>
       </el-form-item>
+      <el-form-item label="Nickname">
+        <el-input v-model="userCreation.nickname"></el-input>
+      </el-form-item>
     </el-form>
 
     <el-divider style="margin: 0"/>
@@ -29,7 +32,8 @@ export default {
       userCreation: {
         name: '',
         secret: '',
-        secretConfirm: ''
+        secretConfirm: '',
+        nickname: ''
       },
       actionResult: null
     }
@@ -48,7 +52,8 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.createUser({
         name: this.userCreation.name,
-        secret: this.userCreation.secret
+        secret: this.userCreation.secret,
+        nickname: this.userCreation.nickname
       }).then((resp) => {
         vue.actionResult = resp
         this.$emit('action-result', vue.actionResult)

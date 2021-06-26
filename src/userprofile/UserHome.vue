@@ -2,19 +2,27 @@
   <div>
     <div v-if="$store.state.securityContext.identity.id">
       User Home
-      <!-- <avatar :size="100" :src="avatarUrl" :rounded="false" style="margin-right: 2px"
-        :username="$store.state.securityContext.identity.name"
-        :title="$store.state.securityContext.identity.name"/> -->
+      <div>
+        Username: {{$store.state.securityContext.identity.name}}
+      </div>
+      <div>
+         Nickname: {{$store.state.securityContext.identity.nickname}}
+      </div>
       <user-avatar :size="100" :rounded="false"
         :userId="$store.state.securityContext.identity.id"
-        :username="$store.state.securityContext.identity.name"/>
-
+        :username="$store.state.securityContext.identity.displayName"/>
       <el-button type="primary" size="mini" @click="onChangePasswordDialog" icon="el-icon-circle-plus-outline">修改密码</el-button>
       <el-button type="primary" size="mini" @click="onChangeAvatarDialog" icon="el-icon-circle-plus-outline">修改头像</el-button>
+      <el-button type="primary" size="mini" @click="onChangeNicknameDialog" icon="el-icon-circle-plus-outline">修改昵称</el-button>
 
       <el-dialog v-if="showChangePasswordDialog === true" title="Change Password" :visible="true" width="80%"
                 :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
         <user-password-change @action-result="onChangePasswordResult"/>
+      </el-dialog>
+
+      <el-dialog v-if="showChangeNicknameDialog === true" title="Change Nickname" :visible="true" width="80%"
+                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
+        <user-nickname-change :originNickname="$store.state.securityContext.identity.nickname" @action-result="onChangeNicknameResult"/>
       </el-dialog>
 
       <image-upload field="file" @cropUploadSuccess="cropUploadSuccess" @cropUploadFail="cropUploadFail"
@@ -30,6 +38,7 @@
 <script>
 import { client } from '../flywheel'
 import UserPasswordChange from './UserPasswordChange'
+import UserNicknameChange from './UserNicknameChange'
 import ImageUpload from 'vue-image-crop-upload/upload-2.vue'
 import UserAvatar from './UserAvatar'
 
@@ -37,13 +46,15 @@ export default {
   name: 'UserHome',
   components: {
     UserPasswordChange,
+    UserNicknameChange,
     ImageUpload,
     UserAvatar
   },
   data () {
     return {
       showChangePasswordDialog: false,
-      showChangeAvatarDialog: false
+      showChangeAvatarDialog: false,
+      showChangeNicknameDialog: false
     }
   },
   computed: {
@@ -58,6 +69,14 @@ export default {
     onChangePasswordResult (result) {
       this.showChangePasswordDialog = false
     },
+
+    onChangeNicknameDialog () {
+      this.showChangeNicknameDialog = true
+    },
+    onChangeNicknameResult (result) {
+      this.showChangeNicknameDialog = false
+    },
+
     onChangeAvatarDialog () {
       this.showChangeAvatarDialog = true
     },

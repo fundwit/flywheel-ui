@@ -60,8 +60,10 @@ const store = new Vuex.Store({
         return
       }
 
+      secCtx.identity.displayName = secCtx.identity.nickname ? secCtx.identity.nickname : secCtx.identity.name
       state.securityContext = secCtx
       state.isAuthenticated = true
+
       if (!state.currentProject.projectId && secCtx.projectRoles && secCtx.projectRoles.length > 0) {
         if (secCtx.currentProjectId) {
           const projectRole = _.find(state.securityContext.projectRoles, pr => pr.projectId === secCtx.currentProjectId)

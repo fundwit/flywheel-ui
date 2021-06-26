@@ -159,6 +159,10 @@ export class FlywheelClient {
     return axios.post(this.withPath('/v1/users'), creation).then(r => r.data)
   }
 
+  async updateUser (userId, changes) {
+    return axios.put(this.withPath('/v1/users/' + userId), changes).then(r => r.data)
+  }
+
   async queryProjects () {
     return axios.get(this.withPath('/v1/projects'), {})
   }

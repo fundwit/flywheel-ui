@@ -3,14 +3,11 @@
     <div>User Manage</div>
     <el-button type="primary" size="mini" @click="onCreateUserDialog" icon="el-icon-circle-plus-outline">添加用户</el-button>
     <el-table :data="users" style="width: 100%">
-      <el-table-column
-        prop="id"
-        label="ID"
-        width="200">
+      <el-table-column prop="id" label="ID" width="200">
       </el-table-column>
-      <el-table-column
-        prop="name"
-        label="Name">
+      <el-table-column prop="nickname" label="Nickname">
+      </el-table-column>
+      <el-table-column prop="name" label="Name">
       </el-table-column>
     </el-table>
 

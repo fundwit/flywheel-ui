@@ -46,9 +46,9 @@
             <router-link :to="{ name: 'UserHome'}">
               <user-avatar :rounded="true" :size="25" style="display: inline-block; margin-bottom: -8px"
                 :userId="$store.state.securityContext.identity.id"
-                :username="$store.state.securityContext.identity.name"/>
+                :username="$store.state.securityContext.identity.displayName"/>
 
-              {{$store.state.securityContext.identity.name}}
+              {{$store.state.securityContext.identity.displayName}}
             </router-link>
 
             <el-divider direction="vertical"/>
