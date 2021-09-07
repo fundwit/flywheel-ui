@@ -38,12 +38,12 @@
 </template>
 
 <script>
-import client from '../flywheel'
-import ProjectMemberDelete from '../components/projectMember/ProjectMemberDelete'
-import ProjectMemberCreation from '../components/projectMember/ProjectMemberCreation'
+import client from '../../flywheel'
+import ProjectMemberDelete from '../projectMember/ProjectMemberDelete'
+import ProjectMemberCreation from '../projectMember/ProjectMemberCreation'
 
 export default {
-  name: 'ProjectDetailPage',
+  name: 'ProjectMembers',
   components: {
     ProjectMemberDelete,
     ProjectMemberCreation

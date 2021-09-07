@@ -30,7 +30,7 @@
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'WorkflowList', query: { projectId: projectId } }"><i class="el-icon-share"/> Workflows</router-link>
             <el-divider direction="vertical"/>
-            <router-link :to="{ name: 'ProjectDetail', params: { id: projectId }}"><i class="el-icon-menu"/> Preference</router-link>
+            <router-link :to="{ name: 'ProjectSettingsPage', params: { id: projectId }}"><i class="el-icon-menu"/> Preference</router-link>
           </span>
         </el-col>
 

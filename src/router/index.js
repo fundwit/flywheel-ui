@@ -39,8 +39,20 @@ const routes = [
   },
   {
     path: '/projects/:id',
-    name: 'ProjectDetail',
-    component: () => import('../pages/ProjectDetailPage.vue')
+    name: 'ProjectSettingsPage',
+    component: () => import('../pages/ProjectSettingsPage.vue'),
+    children: [
+      {
+        path: 'members',
+        name: 'Members',
+        component: () => import('../components/project-settings/ProjectMember.vue')
+      },
+      {
+        path: 'labels',
+        name: 'Labels',
+        component: () => import('../components/project-settings/project-labels.vue')
+      }
+    ]
   },
   {
     path: '/me',

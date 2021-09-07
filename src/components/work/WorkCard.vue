@@ -29,7 +29,7 @@
     </div>
 
     <div class="card-content">
-      <div class="work_desc_row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+      <div class="work_desc_row" style="margin-bottom: 2px; display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: flex-start;">
         <div class="work-card-title" style="padding-right: 8px">
           <i :class="workflow.themeIcon"/>
         </div>
@@ -38,10 +38,17 @@
         </div>
       </div>
 
-      <!--    <div class="member_trace card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">-->
-      <!--      <div style="color: darkorange"><i class="el-icon-warning-outline"/>2/5</div>-->
-      <!--      <div style="color: limegreen"><i class="el-icon-circle-check"/>5/5</div>-->
-      <!--    </div>-->
+      <div v-if="work.labels && work.labels.length" class="work_label_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+        <div style="padding-right: 6px">
+          <i class="el-icon-collection-tag"/>
+        </div>
+        <div>
+          <el-tag v-for="label in work.labels" :key="label.name"
+            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label-small">
+            {{label.name}}
+          </el-tag>
+        </div>
+      </div>
 
       <div class="work_state_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
         <div style="padding-right: 6px">
@@ -180,7 +187,6 @@ export default {
   margin-top: 6px;
 }
 .work-card-title {
-  height: 2.5rem;
   word-wrap:break-word;
   word-break:break-all;
   overflow: hidden;
@@ -190,6 +196,10 @@ export default {
   line-height: 20px;
   height: 24px;
   padding: 0 5px;
+  margin-right: 5px;
+}
+.work-type-label-small {
+  display: inline;
   margin-right: 5px;
 }
 .card-content {

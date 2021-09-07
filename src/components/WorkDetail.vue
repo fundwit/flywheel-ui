@@ -38,6 +38,15 @@
         </div>
 
         <el-divider/>
+        <div id="work-detail-label" style="padding: 10px;">
+          Label:
+          <el-tag v-for="label in workLabels" :key="label.name" closable
+            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label"
+            @close="onDeleteWorkLabel(label)">
+            {{label.name}}
+          </el-tag>
+          <label-selector @labelSelected="onLabelSelected" :projectId="this.work.projectId" :labelFilters="workLabels"/>
+        </div>
 
         <div id="work-detail-body">
           <div id="state-area" style="padding: 10px;">
@@ -122,6 +131,7 @@ import client from '../flywheel'
 import _ from 'lodash'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDelete from './work/WorkDelete'
+import LabelSelector from './label/label-selector.vue'
 
 export default {
   name: 'WorkDetail',
@@ -129,7 +139,8 @@ export default {
     workId: null
   },
   components: {
-    WorkDelete
+    WorkDelete,
+    LabelSelector
   },
   data () {
     return {
@@ -140,6 +151,7 @@ export default {
       processTraceTableHeaders: [],
       workProcessStepsLoading: false,
       workProcessStepsLoadingError: null,
+      workLabels: [],
 
       isNameEditing: false,
       editingName: ''
@@ -183,6 +195,31 @@ export default {
     abortEditing () {
       this.editingName = ''
       this.isNameEditing = false
+    },
+    onLabelSelected (label) {
+      if (!label || !label.id) {
+        return
+      }
+      client.addWorkLabelRelation(this.work.id, label.id).then(resp => {
+        this.workLabels.push(label)
+        this.work.labels = this.workLabels
+        this.$emit('workUpdated', this.work)
+      }).catch(err => {
+        this.$notify.error({ title: 'Error', message: 'request failed' + err })
+      })
+    },
+    onDeleteWorkLabel (label) {
+      if (!label || !label.id) {
+        return
+      }
+
+      client.deleteWorkLabelRelation(this.work.id, label.id).then(resp => {
+        this.workLabels = _.filter(this.workLabels, l => l.id !== label.id)
+        this.work.labels = this.workLabels
+        this.$emit('workUpdated', this.work)
+      }).catch(err => {
+        this.$notify.error({ title: 'Error', message: 'request failed' + err })
+      })
     }
   },
   watch: {
@@ -243,6 +280,7 @@ export default {
     const mask = this.$loading({ lock: true, text: 'requesting', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
     client.detailWork(this.workId).then((resp) => {
       vue.work = resp
+      vue.workLabels = resp.labels
       this.$emit('workLoaded', vue.work)
       return client.detailWorkflow(vue.work.flowId)
     }).then(resp => {
@@ -267,7 +305,12 @@ export default {
 .property-title {
   font-weight: bold;
 }
-
+.work-type-label {
+  line-height: 20px;
+  height: 24px;
+  padding: 0 5px;
+  margin-right: 5px;
+}
 .state-category-stack-1 {
   background-color: #daf3f8;
 }

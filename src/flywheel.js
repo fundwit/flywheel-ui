@@ -175,6 +175,22 @@ export class FlywheelClient {
     return axios.put(this.withPath(`/v1/projects/${projectId}`), changes).then(r => r.data)
   }
 
+  async queryProjectLabels (projectId, query) {
+    let optionalQS = ''
+    if (query) {
+      optionalQS = optionalQS + '&query=' + query
+    }
+    return axios.get(this.withPath('/v1/labels?projectId=' + projectId + optionalQS), {}).then(r => r.data)
+  }
+
+  async addProjectLabel (creation) {
+    return axios.post(this.withPath('/v1/labels'), creation)
+  }
+
+  async deleteProjectLabel (id) {
+    return axios.delete(this.withPath(`/v1/labels/${id}`), {})
+  }
+
   async queryProjectMembers (projectId) {
     return axios.get(this.withPath('/v1/project-members?projectId=' + projectId), {})
   }
@@ -197,6 +213,14 @@ export class FlywheelClient {
 
   async finishContribution (workKey, contributorId, effective) {
     return axios.put(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId, effective: effective })
+  }
+
+  async addWorkLabelRelation (workId, labelId) {
+    return axios.post(this.withPath('/v1/work-label-relations'), { workId: workId, labelId: labelId })
+  }
+
+  async deleteWorkLabelRelation (workId, labelId) {
+    return axios.delete(this.withPath(`/v1/work-label-relations?workId=${workId}&labelId=${labelId}`), {})
   }
 }
 

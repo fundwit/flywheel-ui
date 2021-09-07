@@ -20,6 +20,11 @@
           <span class="circle" v-if="scope.row.archivedTime">档</span>
           <span v-if="!scope.row.isEditing">
             <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.name }}</router-link>
+            <br/>
+            <el-tag v-for="label in scope.row.labels" :key="label.name"
+            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label">
+            {{label.name}}
+          </el-tag>
           </span>
           <el-input v-if="scope.row.isEditing" v-model="editingWork.name" placeholder="请输入内容"></el-input>
         </template>
@@ -116,6 +121,12 @@ li {
 }
 a {
   color: #42b983;
+}
+.work-type-label {
+  line-height: 20px;
+  height: 24px;
+  padding: 0 5px;
+  margin-right: 5px;
 }
 .circle {
   border: 1.5px solid #1E90FF;
