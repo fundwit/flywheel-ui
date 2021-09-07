@@ -9,17 +9,43 @@
           <work-delete :work="work" @workDeleted="onWorkDeleted"/>
         </div>
 
-        <div id="work-detail-header" style="background-color: #fde402; border-bottom: lightgray solid 0px; display: flex; display: -webkit-flex; flex-wrap: nowrap;">
-          <div style="display: none; background-color: transparent; padding: 10px;"></div>
-          <div style="display: none; width: 0; height: 0; border-width: 20px; border-style: solid; border-color: transparent transparent transparent red;"></div>
+        <el-divider/>
+
+        <div id="work-detail-header" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
           <div style="padding: 10px; font-size: 1.0rem">
             <el-tag v-if="workflow" size="small" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
               <i :class="workflow.themeIcon ? workflow.themeIcon : 'el-icon-s-claim'"/>
               {{workflow.name}}
             </el-tag>
-            <span> #{{work.id}}</span>
-            <span> {{work.name}}</span>
+            <span> {{ work.identifier }} </span>
           </div>
+
+          <div style="flex-grow: 1; padding: 10px; font-size: 1.0rem">
+            <span v-if="!isNameEditing"> {{work.name}}</span>
+            <el-input v-if="isNameEditing" size="mini" style="width: 100%" v-model="editingName"/>
+          </div>
+
+          <div style="padding: 10px; font-size: 1.0rem">
+            <span v-if="!isNameEditing">
+              <el-button @click="onEditNameStarted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-edit-outline" type="primary" size="small"></el-button>
+            </span>
+
+            <span v-if="isNameEditing">
+              <el-button @click="onEditNameSubmitted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-check" type="success" size="mini"></el-button>
+              <el-button @click="onEditNameCanceled" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-close" type="warning" size="mini"></el-button>
+            </span>
+          </div>
+        </div>
+
+        <el-divider/>
+        <div id="work-detail-label" style="padding: 10px;">
+          Label:
+          <el-tag v-for="label in workLabels" :key="label.name" closable
+            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label"
+            @close="onDeleteWorkLabel(label)">
+            {{label.name}}
+          </el-tag>
+          <label-selector @labelSelected="onLabelSelected" :projectId="this.work.projectId" :labelFilters="workLabels"/>
         </div>
 
         <div id="work-detail-body">
@@ -50,7 +76,8 @@
           <div id="property-area" style="padding: 10px;">
           </div>
 
-          <el-divider style="margin: 0"/>
+          <el-divider/>
+
           <div id="trace-area" style="padding: 10px;">
             <div>Process Progress</div>
 
@@ -104,6 +131,7 @@ import client from '../flywheel'
 import _ from 'lodash'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDelete from './work/WorkDelete'
+import LabelSelector from './label/label-selector.vue'
 
 export default {
   name: 'WorkDetail',
@@ -111,7 +139,8 @@ export default {
     workId: null
   },
   components: {
-    WorkDelete
+    WorkDelete,
+    LabelSelector
   },
   data () {
     return {
@@ -121,7 +150,11 @@ export default {
       processTraceTableData: [],
       processTraceTableHeaders: [],
       workProcessStepsLoading: false,
-      workProcessStepsLoadingError: null
+      workProcessStepsLoadingError: null,
+      workLabels: [],
+
+      isNameEditing: false,
+      editingName: ''
     }
   },
   methods: {
@@ -129,6 +162,64 @@ export default {
     formatTimeDuration: formatTimeDuration,
     onWorkDeleted (deletedWork) {
       this.$emit('workDeleted', deletedWork)
+    },
+    onEditNameStarted () {
+      this.editingName = this.work.name
+      this.isNameEditing = true
+    },
+    onEditNameSubmitted () {
+      if (this.editingName === this.work.name) {
+        this.$notify.warning({ title: 'Warning', message: 'no changes' })
+        this.abortEditing()
+        return
+      }
+
+      if (this.editingName.trim().length === 0) {
+        this.$notify.warning({ title: 'Warning', message: 'work name must not be empty' })
+        return
+      }
+
+      const vue = this
+      const changes = { name: this.editingName }
+      client.updateWork(this.work.id, changes).then(data => {
+        vue.work = _.assignIn(vue.work, data)
+        vue.abortEditing()
+        vue.$emit('workUpdated', vue.work)
+      }).catch(error => {
+        vue.$notify.error({ title: 'Error', message: '更新失败' + error })
+      })
+    },
+    onEditNameCanceled () {
+      this.abortEditing()
+    },
+    abortEditing () {
+      this.editingName = ''
+      this.isNameEditing = false
+    },
+    onLabelSelected (label) {
+      if (!label || !label.id) {
+        return
+      }
+      client.addWorkLabelRelation(this.work.id, label.id).then(resp => {
+        this.workLabels.push(label)
+        this.work.labels = this.workLabels
+        this.$emit('workUpdated', this.work)
+      }).catch(err => {
+        this.$notify.error({ title: 'Error', message: 'request failed' + err })
+      })
+    },
+    onDeleteWorkLabel (label) {
+      if (!label || !label.id) {
+        return
+      }
+
+      client.deleteWorkLabelRelation(this.work.id, label.id).then(resp => {
+        this.workLabels = _.filter(this.workLabels, l => l.id !== label.id)
+        this.work.labels = this.workLabels
+        this.$emit('workUpdated', this.work)
+      }).catch(err => {
+        this.$notify.error({ title: 'Error', message: 'request failed' + err })
+      })
     }
   },
   watch: {
@@ -189,6 +280,8 @@ export default {
     const mask = this.$loading({ lock: true, text: 'requesting', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
     client.detailWork(this.workId).then((resp) => {
       vue.work = resp
+      vue.workLabels = resp.labels
+      this.$emit('workLoaded', vue.work)
       return client.detailWorkflow(vue.work.flowId)
     }).then(resp => {
       vue.workflow = resp
@@ -202,6 +295,9 @@ export default {
 </script>
 
 <style scoped>
+.el-divider {
+  margin: 5px 0 !important;
+}
 .property-row {
   padding-top: 10px;
   padding-right: 10px;
@@ -209,14 +305,19 @@ export default {
 .property-title {
   font-weight: bold;
 }
-
-.state-category-stack-0 {
-  background-color: #daf3f8;
+.work-type-label {
+  line-height: 20px;
+  height: 24px;
+  padding: 0 5px;
+  margin-right: 5px;
 }
 .state-category-stack-1 {
-  background-color: #fcf7cd;
+  background-color: #daf3f8;
 }
 .state-category-stack-2 {
+  background-color: #fcf7cd;
+}
+.state-category-stack-3 {
   background-color: #e2e2e2;
 }
 .step-current {

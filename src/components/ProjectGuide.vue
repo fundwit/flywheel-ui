@@ -7,7 +7,7 @@
 <script>
 
 export default {
-  name: 'GroupGuide',
+  name: 'ProjectGuide',
   components: {
   },
   data () {

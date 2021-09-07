@@ -1,4 +1,4 @@
-export default function computeOrderChanges (workOrders, newIndex, oldIndex) {
+export default function computeOrderChanges (workOrders, idPropertyName, orderPropertyName, newIndex, oldIndex) {
   const workCount = workOrders.length
   let preOrder = 0
   let postOrder = 0
@@ -11,12 +11,12 @@ export default function computeOrderChanges (workOrders, newIndex, oldIndex) {
         continue
       }
 
-      preOrder = workOrders[i].orderInState
-      postOrder = workOrders[i + 1].orderInState
+      preOrder = workOrders[i][orderPropertyName]
+      postOrder = workOrders[i + 1][orderPropertyName]
       if (preOrder >= postOrder) {
-        const oldOrder = workOrders[i].orderInState
-        workOrders[i].orderInState = postOrder - 1
-        changes.push({ id: workOrders[i].id, newOrder: workOrders[i].orderInState, oldOrder: oldOrder, index: workOrders[i].index })
+        const oldOrder = workOrders[i][orderPropertyName]
+        workOrders[i][orderPropertyName] = postOrder - 1
+        changes.push({ [idPropertyName]: workOrders[i][idPropertyName], newOrder: workOrders[i][orderPropertyName], oldOrder: oldOrder, index: workOrders[i].index })
       }
     }
   } else if (newIndex > oldIndex) {
@@ -25,12 +25,12 @@ export default function computeOrderChanges (workOrders, newIndex, oldIndex) {
       if (!workOrders[i - 1]) {
         continue
       }
-      preOrder = workOrders[i - 1].orderInState
-      postOrder = workOrders[i].orderInState
+      preOrder = workOrders[i - 1][orderPropertyName]
+      postOrder = workOrders[i][orderPropertyName]
       if (preOrder >= postOrder) {
-        const oldOrder = workOrders[i].orderInState
-        workOrders[i].orderInState = preOrder + 1
-        changes.push({ id: workOrders[i].id, newOrder: workOrders[i].orderInState, oldOrder: oldOrder, index: workOrders[i].index })
+        const oldOrder = workOrders[i][orderPropertyName]
+        workOrders[i][orderPropertyName] = preOrder + 1
+        changes.push({ [idPropertyName]: workOrders[i][idPropertyName], newOrder: workOrders[i][orderPropertyName], oldOrder: oldOrder, index: workOrders[i].index })
       }
     }
   }

@@ -6,13 +6,13 @@
       <el-col :span="8" style="padding: 5em">
         <el-form label-width="80px" :model="loginForm">
           <el-form-item label="用户名">
-            <el-input v-model="loginForm.name"></el-input>
+            <el-input v-model="loginForm.name" @keyup.enter.native="onInternalSignIn"></el-input>
           </el-form-item>
           <el-form-item label="密码">
-            <el-input show-password v-model="loginForm.password"></el-input>
+            <el-input show-password v-model="loginForm.password" @keyup.enter.native="onInternalSignIn"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onInternalSignIn">Sign In</el-button>
+            <el-button type="primary" @click="onInternalSignIn" @keyup.enter.native="onInternalSignIn">Sign In</el-button>
           </el-form-item>
         </el-form>
 
@@ -42,7 +42,7 @@ export default {
       const mask = this.$loading({ lock: true, text: 'Logging', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.login(this.loginForm).then(secCtx => {
         vue.$store.commit(statesConst.mutateSecurityContext, secCtx)
-        this.$router.push({ name: 'WorkBacklog', query: { projectId: vue.$store.state.defaultGroupId } })
+        this.$router.push({ name: 'Dashboard' })
       }).catch(error => {
         console.log(error)
         this.$notify.error({ title: 'Error', message: 'failed to login' })

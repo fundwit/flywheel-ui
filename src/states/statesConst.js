@@ -1,4 +1,6 @@
 
 export default {
-  mutateSecurityContext: 'mutateSecurityContext'
+  mutateSecurityContext: 'mutateSecurityContext',
+  currentProjectId: 'currentProjectId',
+  updateSecurityContext: 'updateSecurityContext'
 }

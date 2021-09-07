@@ -5,9 +5,10 @@ axios.defaults.adapter = adapter
 axios.defaults.withCredentials = true
 
 export const stateCategories = [
-  { id: 0, name: 'InBacklog' },
-  { id: 1, name: 'InProcess' },
-  { id: 2, name: 'Done' }
+  { id: 1, name: 'InBacklog' },
+  { id: 2, name: 'InProcess' },
+  { id: 3, name: 'Done' },
+  { id: 4, name: 'Rejected' }
 ]
 
 export class FlywheelClient {
@@ -40,12 +41,16 @@ export class FlywheelClient {
     return axios.delete(this.withPath('/v1/sessions')).then(r => r.data)
   }
 
+  async detailSession () {
+    return axios.get(this.withPath('/v1/session')).then(r => r.data)
+  }
+
   async queryIdentity (form) {
     return axios.get(this.withPath('/me'), form).then(r => r.data)
   }
 
-  async queryWorkflows (groupId) {
-    return axios.get(this.withPath(`/v1/workflows?groupId=${groupId}`), {})
+  async queryWorkflows (projectId) {
+    return axios.get(this.withPath(`/v1/workflows?projectId=${projectId}`), {})
       .then(r => r.data)
   }
 
@@ -58,12 +63,43 @@ export class FlywheelClient {
     return axios.post(this.withPath('/v1/workflows'), creationForm).then(r => r.data)
   }
 
+  async updateWorkflowBase (id, workflowChanges) {
+    return axios.put(this.withPath('/v1/workflows/' + id), workflowChanges)
+  }
+
   async deleteWorkflow (id) {
     return axios.delete(this.withPath('/v1/workflows/' + id), {})
   }
 
   async loadAvailableTransitions (flowId, from) {
     return axios.get(this.withPath(`/v1/workflows/${flowId}/transitions?fromState=${from}`)).then(r => r.data)
+  }
+
+  async enableWorkflowTransition (flowId, from, to) {
+    return axios.post(this.withPath(`/v1/workflows/${flowId}/transitions`), [{ name: from + '->' + to, from: from, to: to }])
+      .then(r => r.data)
+  }
+
+  async disableWorkflowTransition (flowId, from, to) {
+    return axios.request({
+      method: 'DELETE',
+      url: this.withPath(`/v1/workflows/${flowId}/transitions`),
+      data: [{ name: from + '->' + to, from: from, to: to }]
+    }).then(r => r.data)
+  }
+
+  async updateWorkflowState (flowId, changes) {
+    return axios.put(this.withPath(`/v1/workflows/${flowId}/states`), changes)
+      .then(r => r.data)
+  }
+
+  async createWorkflowState (flowId, stateCreating) {
+    return axios.post(this.withPath(`/v1/workflows/${flowId}/states`), stateCreating)
+      .then(r => r.data)
+  }
+
+  async updateWorkflowStateRangeOrders (flowId, orderUpdating) {
+    return axios.put(this.withPath(`/v1/workflows/${flowId}/state-orders`), orderUpdating).then(r => r.data)
   }
 
   async createWorkTransition (flowID, workID, from, to) {
@@ -84,18 +120,22 @@ export class FlywheelClient {
       .then(r => r.data)
   }
 
-  async queryWorks (groupId) {
-    return axios.get(this.withPath(`/v1/works?groupId=${groupId}`), {})
+  async queryWorks (projectId) {
+    return axios.get(this.withPath(`/v1/works?projectId=${projectId}`), {})
       .then(r => r.data)
   }
 
-  async queryBacklog (groupId) {
-    return axios.get(this.withPath(`/v1/works?groupId=${groupId}&stateCategory=0&stateCategory=1`), {})
+  async queryBacklog (projectId) {
+    return axios.get(this.withPath(`/v1/works?projectId=${projectId}&stateCategory=1&stateCategory=2`), {})
       .then(r => r.data)
   }
 
   async deleteWork (id) {
     return axios.delete(this.withPath('/v1/works/' + id), {})
+  }
+
+  async archiveWorks (idList) {
+    return axios.post(this.withPath('/v1/archived-works'), { workIdList: idList }).then(r => r.data)
   }
 
   async updateStateRangeOrders (orderUpdating) {
@@ -105,6 +145,82 @@ export class FlywheelClient {
   async queryWorkProcessSteps (workId) {
     return axios.get(this.withPath(`/v1/work-process-steps?workId=${workId}`), {})
       .then(r => r.data)
+  }
+
+  async changePassword (changes) {
+    return axios.put(this.withPath('/v1/session-users/basic-auths'), changes)
+  }
+
+  async queryUsers () {
+    return axios.get(this.withPath('/v1/users'), {})
+  }
+
+  async createUser (creation) {
+    return axios.post(this.withPath('/v1/users'), creation).then(r => r.data)
+  }
+
+  async updateUser (userId, changes) {
+    return axios.put(this.withPath('/v1/users/' + userId), changes).then(r => r.data)
+  }
+
+  async queryProjects () {
+    return axios.get(this.withPath('/v1/projects'), {})
+  }
+
+  async createProject (creation) {
+    return axios.post(this.withPath('/v1/projects'), creation).then(r => r.data)
+  }
+
+  async updateProject (projectId, changes) {
+    return axios.put(this.withPath(`/v1/projects/${projectId}`), changes).then(r => r.data)
+  }
+
+  async queryProjectLabels (projectId, query) {
+    let optionalQS = ''
+    if (query) {
+      optionalQS = optionalQS + '&query=' + query
+    }
+    return axios.get(this.withPath('/v1/labels?projectId=' + projectId + optionalQS), {}).then(r => r.data)
+  }
+
+  async addProjectLabel (creation) {
+    return axios.post(this.withPath('/v1/labels'), creation)
+  }
+
+  async deleteProjectLabel (id) {
+    return axios.delete(this.withPath(`/v1/labels/${id}`), {})
+  }
+
+  async queryProjectMembers (projectId) {
+    return axios.get(this.withPath('/v1/project-members?projectId=' + projectId), {})
+  }
+
+  async deleteProjectMember (projectId, memberId) {
+    return axios.delete(this.withPath(`/v1/project-members?projectId=${projectId}&memberId=${memberId}`), {})
+  }
+
+  async addProjectMember (creation) {
+    return axios.post(this.withPath('/v1/project-members'), creation)
+  }
+
+  async queryContributions (query) {
+    return axios.post(this.withPath('/v1/contributor-queries'), query).then(r => r.data)
+  }
+
+  async beginContribution (workKey, contributorId) {
+    return axios.post(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId })
+  }
+
+  async finishContribution (workKey, contributorId, effective) {
+    return axios.put(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId, effective: effective })
+  }
+
+  async addWorkLabelRelation (workId, labelId) {
+    return axios.post(this.withPath('/v1/work-label-relations'), { workId: workId, labelId: labelId })
+  }
+
+  async deleteWorkLabelRelation (workId, labelId) {
+    return axios.delete(this.withPath(`/v1/work-label-relations?workId=${workId}&labelId=${labelId}`), {})
   }
 }
 

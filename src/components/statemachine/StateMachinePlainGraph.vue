@@ -3,7 +3,7 @@
     <div v-if="isLoading">Loading...</div>
     <div v-if="loadingError" style="color: red">{{ loadingError }}</div>
     <div v-if="workflowDetail">
-      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="mapStateCategory(state.category).style"
+      <el-tag v-for="state in workflowDetail.stateMachine.states" :key="state.name" :type="categoryStyle(state.category).style"
               size="small" effect="dark" class="state-list-item">
         {{ state.name }}
       </el-tag>
@@ -13,8 +13,9 @@
 
 <script>
 import { client, stateCategories } from '../../flywheel'
+import { categoryStyle } from '../../themes'
 export default {
-  name: 'WorkflowStates',
+  name: 'StateMachinePlainGraph',
   props: {
     workflowId: null
   },
@@ -41,21 +42,7 @@ export default {
     })
   },
   methods: {
-    mapStateCategory (category) {
-      if (category === 0) {
-        return {
-          style: ''
-        }
-      } else if (category === 1) {
-        return {
-          style: 'warning'
-        }
-      } else if (category === 2) {
-        return {
-          style: 'info'
-        }
-      }
-    }
+    categoryStyle: categoryStyle
   }
 }
 </script>
@@ -63,17 +50,14 @@ export default {
 <style scoped>
 .state-list-item {
   margin-right: 1px;
-  -webkit-transform: skew(-20deg);
-  -moz-transform:skew(-20deg);
-  transform:skew(-20deg);
-}
-.state-category-stack-0 {
-  background-color: #daf3f8;
 }
 .state-category-stack-1 {
-  background-color: #fcf7cd;
+  background-color: #daf3f8;
 }
 .state-category-stack-2 {
+  background-color: #fcf7cd;
+}
+.state-category-stack-3 {
   background-color: #e2e2e2;
 }
 </style>

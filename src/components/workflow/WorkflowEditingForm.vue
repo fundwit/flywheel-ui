@@ -1,14 +1,14 @@
 <template>
   <div>
-    <el-form ref="form" :model="creatingWorkflow" label-width="80px">
+    <el-form :model="editingWorkflow" label-width="80px">
       <el-form-item label="Name">
-        <el-input v-model="creatingWorkflow.name" placeholder="input the name of this workflow"></el-input>
+        <el-input v-model="editingWorkflow.name" placeholder="input the name of this workflow"></el-input>
       </el-form-item>
       <el-form-item label="Color">
-        <el-color-picker v-model="creatingWorkflow.themeColor" size="small"/>
+        <el-color-picker v-model="editingWorkflow.themeColor" size="small"/>
       </el-form-item>
       <el-form-item label="Icon">
-        <el-radio-group :fill="creatingWorkflow.themeColor" v-model="creatingWorkflow.themeIcon" size="small">
+        <el-radio-group :fill="editingWorkflow.themeColor" v-model="editingWorkflow.themeIcon" size="small">
           <el-radio-button label="el-icon-s-opportunity"><i class="el-icon-s-opportunity"/></el-radio-button>
           <el-radio-button label="el-icon-s-help"><i class="el-icon-s-help"/></el-radio-button>
           <el-radio-button label="el-icon-message-solid"><i class="el-icon-message-solid"/></el-radio-button>
@@ -16,7 +16,7 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Project">
-        <el-select disabled v-model="creatingWorkflow.projectId" placeholder="select the project which this workflow is belong to">
+        <el-select disabled v-model="editingWorkflow.projectId" placeholder="select the project which this workflow is belong to">
           <el-option v-for="item in $store.state.securityContext.projectRoles"
                      :key="item.projectId" :label="item.projectName" :value="item.projectId">
           </el-option>
@@ -25,76 +25,69 @@
     </el-form>
 
     <el-divider style="margin: 0"/>
-
-    <div>state machine</div>
-    <state-machine-creating-form @stateMachineUpdated="onStateMachineUpdated"/>
-
-    <el-divider style="margin: 0"/>
-
-    <el-button type="primary" @click="onCreateWorkflow">Submit</el-button>
+    <el-button type="primary" @click="onSaveWorkflow">Submit</el-button>
     <el-button @click="onCancel">Cancel</el-button>
   </div>
 </template>
 
 <script>
 import { client, stateCategories } from '../../flywheel'
-import { randomColor } from '../../colors'
-import StateMachineCreatingForm from '../statemachine/StateMachineCreatingForm'
 
 export default {
-  name: 'WorkflowCreatingForm',
-  components: {
-    StateMachineCreatingForm
-  },
+  name: 'WorkflowEditingForm',
   props: {
-    selectedProjectId: null
+    selectedProjectId: null,
+    editingWorkflowId: null
   },
   data () {
     return {
       stateCategories: stateCategories,
-      creatingWorkflow: {
+      editingWorkflow: {
         name: '',
         projectId: this.selectedProjectId,
-        themeColor: randomColor(),
+        themeColor: '',
         themeIcon: ''
       },
-      stateMachine: {
-        states: [],
-        transitions: []
-      },
-      creatingResult: null
+      states: [],
+      transitions: [],
+      actionResult: null
     }
   },
+  mounted () {
+    const vue = this
+    const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
+    client.detailWorkflow(this.editingWorkflowId).then((resp) => {
+      vue.editingWorkflow = resp
+      vue.states = resp.stateMachine.states
+      vue.transitions = resp.stateMachine.transitions
+    }).catch((error) => {
+      vue.$notify.error({ title: 'Error', message: 'request failed: ' + error })
+    }).finally(() => {
+      mask.close()
+    })
+  },
   methods: {
-    onStateMachineUpdated (fsm) {
-      this.stateMachine = fsm
-    },
     onCancel () {
-      this.$emit('creating-result', null)
+      this.$emit('action-result', null)
     },
-
-    onCreateWorkflow () {
-      if (!this.creatingWorkflow || !this.creatingWorkflow.name || !this.creatingWorkflow.projectId ||
-          !this.stateMachine || !this.stateMachine.states || !this.stateMachine.states.length) {
+    onSaveWorkflow () {
+      if (!this.editingWorkflow || !this.editingWorkflow.name || !this.editingWorkflow.projectId) {
         this.$notify.error({ title: 'Error', message: '参数错误' })
         return
       }
-
       const vue = this
       const mask = this.$loading({ lock: true, text: 'Loading', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
-      client.createWorkflow({
-        name: this.creatingWorkflow.name,
-        projectId: this.creatingWorkflow.projectId,
-        themeColor: this.creatingWorkflow.themeColor,
-        themeIcon: this.creatingWorkflow.themeIcon ? this.creatingWorkflow.themeIcon : 'el-icon-s-opportunity',
-        stateMachine: this.stateMachine
+      client.updateWorkflowBase(this.editingWorkflowId, {
+        name: this.editingWorkflow.name,
+        themeColor: this.editingWorkflow.themeColor,
+        themeIcon: this.editingWorkflow.themeIcon ? this.editingWorkflow.themeIcon : 'el-icon-s-opportunity'
       }).then((resp) => {
-        vue.creatingResult = resp
+        vue.actionResult = resp
       }).catch((error) => {
         vue.$notify.error({ title: 'Error', message: 'request failed: ' + error })
       }).finally(() => {
         mask.close()
-        vue.$emit('creating-result', vue.creatingResult)
+        vue.$emit('action-result', vue.actionResult)
       })
     }
   }

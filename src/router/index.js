@@ -36,6 +36,55 @@ const routes = [
     path: '/workflows/:id',
     name: 'WorkflowDetail',
     component: () => import('../pages/WorkflowDetail.vue')
+  },
+  {
+    path: '/projects/:id',
+    name: 'ProjectSettingsPage',
+    component: () => import('../pages/ProjectSettingsPage.vue'),
+    children: [
+      {
+        path: 'members',
+        name: 'Members',
+        component: () => import('../components/project-settings/ProjectMember.vue')
+      },
+      {
+        path: 'labels',
+        name: 'Labels',
+        component: () => import('../components/project-settings/project-labels.vue')
+      }
+    ]
+  },
+  {
+    path: '/me',
+    name: 'UserHome',
+    component: () => import('../userprofile/UserHome')
+  },
+  {
+    path: '/admin',
+    name: 'AdminHome',
+    component: () => import('../admin/AdminHome'),
+    children: [
+      {
+        path: 'metrics',
+        name: 'Metrics',
+        component: () => import('../admin/pages/Metrics')
+      },
+      {
+        path: 'projects',
+        name: 'ProjectManage',
+        component: () => import('../admin/pages/ProjectManage')
+      },
+      {
+        path: 'users',
+        name: 'UserManage',
+        component: () => import('../admin/pages/UserManage')
+      },
+      {
+        path: 'notifications',
+        name: 'NotificationManage',
+        component: () => import('../admin/pages/NotificationManage')
+      }
+    ]
   }
 ]
 
