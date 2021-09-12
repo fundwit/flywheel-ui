@@ -51,9 +51,16 @@
       </div>
 
       <div class="work_state_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-        <div style="padding-right: 6px">
-          <i class="el-icon-s-custom"/>
+        <div style="padding-right: 6px;">
+          <el-popover placement="bottom-start" trigger="hover">
+            <checkitem-list :work="work" style="min-width: 400px" @checkItemsUpdated="onCheckitemsUpdated"/>
+            <span slot="reference">
+              <checklist-indicator :checklist="work.checklist ? work.checklist : []"/>
+            </span>
+          </el-popover>
         </div>
+
+        <span style="flex-grow: 1"/>
         <user-avatar v-for="c in contributions" :key="c.id" :rounded="c.endTime != null" style="margin-right: 2px"
           :userId="c.contributorId" :username="c.contributorName"/>
       </div>
@@ -84,12 +91,16 @@ import { categoryStyle } from '../../themes'
 import UserAvatar from '../../userprofile/UserAvatar'
 import VClamp from 'vue-clamp'
 import client from '../../flywheel'
+import CheckitemList from '../checklist/checkitem-list.vue'
+import ChecklistIndicator from '../checklist/checkitem-indicator.vue'
 
 export default {
   name: 'WorkCard',
   components: {
     UserAvatar,
-    VClamp
+    VClamp,
+    CheckitemList,
+    ChecklistIndicator
   },
   props: {
     work: null,
@@ -165,6 +176,10 @@ export default {
           vue.$emit('workArchived', vue.work)
         }
       })
+    },
+    onCheckitemsUpdated (checkitems) {
+      this.$set(this.work, 'checklist', checkitems)
+      this.$emit('workUpdated', this.work)
     }
   }
 }

@@ -73,6 +73,12 @@
             </el-row>
           </div>
 
+          <el-divider/>
+          <div id="checklist-area" style="padding: 10px;">
+            <checklist-indicator :checklist="work.checklist"/>
+            <checkitem-list :work="work" @checkItemsUpdated="onCheckitemsUpdated"/>
+          </div>
+
           <div id="property-area" style="padding: 10px;">
           </div>
 
@@ -131,7 +137,9 @@ import client from '../flywheel'
 import _ from 'lodash'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDelete from './work/WorkDelete'
+import CheckitemList from './checklist/checkitem-list.vue'
 import LabelSelector from './label/label-selector.vue'
+import ChecklistIndicator from './checklist/checkitem-indicator.vue'
 
 export default {
   name: 'WorkDetail',
@@ -140,7 +148,9 @@ export default {
   },
   components: {
     WorkDelete,
-    LabelSelector
+    LabelSelector,
+    CheckitemList,
+    ChecklistIndicator
   },
   data () {
     return {
@@ -220,6 +230,10 @@ export default {
       }).catch(err => {
         this.$notify.error({ title: 'Error', message: 'request failed' + err })
       })
+    },
+    onCheckitemsUpdated (checkitems) {
+      this.$set(this.work, 'checklist', checkitems)
+      this.$emit('workUpdated', this.work)
     }
   },
   watch: {

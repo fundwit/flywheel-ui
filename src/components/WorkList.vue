@@ -22,7 +22,7 @@
             <router-link :to="{ name: 'WorkDetail', params: { id: scope.row.id }}">{{ scope.row.name }}</router-link>
             <br/>
             <el-tag v-for="label in scope.row.labels" :key="label.name"
-            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label">
+            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label-small">
             {{label.name}}
           </el-tag>
           </span>
@@ -126,6 +126,10 @@ a {
   line-height: 20px;
   height: 24px;
   padding: 0 5px;
+  margin-right: 5px;
+}
+.work-type-label-small {
+  display: inline;
   margin-right: 5px;
 }
 .circle {

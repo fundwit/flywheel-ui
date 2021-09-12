@@ -3,7 +3,7 @@
     <span v-if="loadingError" style="color: red">{{ loadingError }}</span>
 
     <el-autocomplete v-if="selectEnabled" v-model="selectedLabel" :fetch-suggestions="loadLabels" placeholder="请输入内容"
-     @select="handleSelect" size="small">
+     @select="handleSelect" size="mini">
      <i class="el-icon-close el-input__icon" slot="suffix" @click="selectEnabled = false"></i>
       <template slot-scope="{ item }">
         <el-tag :key="item.name" class="work-type-label" effect="dark" :style="{ backgroundColor: item.themeColor}" >
@@ -12,7 +12,7 @@
       </template>
     </el-autocomplete>
 
-    <el-button v-else class="button-new-tag" size="small" @click="selectEnabled = true">+ Label</el-button>
+    <el-button v-else class="button-new-tag" size="mini" @click="selectEnabled = true">+ Label</el-button>
   </span>
 </template>
 

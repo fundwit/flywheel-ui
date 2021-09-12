@@ -191,6 +191,18 @@ export class FlywheelClient {
     return axios.delete(this.withPath(`/v1/labels/${id}`), {})
   }
 
+  async addWorkCheckItem (creation) {
+    return axios.post(this.withPath('/v1/checkitems'), creation)
+  }
+
+  async deleteWorkCheckItem (id) {
+    return axios.delete(this.withPath(`/v1/checkitems/${id}`), {})
+  }
+
+  async updateWorkCheckItem (id, changes) {
+    return axios.patch(this.withPath(`/v1/checkitems/${id}`), changes)
+  }
+
   async queryProjectMembers (projectId) {
     return axios.get(this.withPath('/v1/project-members?projectId=' + projectId), {})
   }
