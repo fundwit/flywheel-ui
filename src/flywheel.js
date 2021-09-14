@@ -219,12 +219,18 @@ export class FlywheelClient {
     return axios.post(this.withPath('/v1/contributor-queries'), query).then(r => r.data)
   }
 
-  async beginContribution (workKey, contributorId) {
-    return axios.post(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId })
+  async beginContribution (workKey, contributorId, checkitemId) {
+    return axios.post(this.withPath('/v1/contributions'),
+      { workKey: workKey, contributorId: contributorId, checkitemId: checkitemId || 0 })
   }
 
-  async finishContribution (workKey, contributorId, effective) {
-    return axios.put(this.withPath('/v1/contributions'), { workKey: workKey, contributorId: contributorId, effective: effective })
+  async finishContribution (workKey, contributorId, checkitemId, effective) {
+    return axios.put(this.withPath('/v1/contributions'), {
+      workKey: workKey,
+      contributorId: contributorId,
+      checkitemId: checkitemId,
+      effective: effective
+    })
   }
 
   async addWorkLabelRelation (workId, labelId) {

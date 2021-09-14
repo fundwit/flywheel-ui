@@ -137,9 +137,9 @@ import client from '../flywheel'
 import _ from 'lodash'
 import { formatTime, formatTimeDuration } from '../times'
 import WorkDelete from './work/WorkDelete'
-import CheckitemList from './checklist/checkitem-list.vue'
+import CheckitemList from './checklist/checklist.vue'
 import LabelSelector from './label/label-selector.vue'
-import ChecklistIndicator from './checklist/checkitem-indicator.vue'
+import ChecklistIndicator from './checklist/checklist-indicator.vue'
 
 export default {
   name: 'WorkDetail',

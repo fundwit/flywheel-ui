@@ -18,10 +18,6 @@
              <i class="el-icon-more"/>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-if="work.stateCategory != 3 && work.stateCategory != 4" @click.native="beginContribution">Begin Contribution</el-dropdown-item>
-            <el-dropdown-item @click.native="finishContribution(true)">Complete Contribution</el-dropdown-item>
-            <el-dropdown-item @click.native="finishContribution(false)">Discard Contribution</el-dropdown-item>
-            <el-dropdown-item v-if="work.stateCategory != 3 && work.stateCategory != 4">Assign To</el-dropdown-item>
             <el-dropdown-item v-if="work.stateCategory == 3 || work.stateCategory == 4" icon="el-icon-setting" @click.native="archiveWork">Archive</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -53,7 +49,8 @@
       <div class="work_state_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
         <div style="padding-right: 6px;">
           <el-popover placement="bottom-start" trigger="hover">
-            <checkitem-list :work="work" style="min-width: 400px" @checkItemsUpdated="onCheckitemsUpdated"/>
+            <checklist :work="work" :contributions="contributions" style="min-width: 400px"
+               @workContributionChanged="onWorkContributionChanged" @checkItemsUpdated="onCheckitemsUpdated"/>
             <span slot="reference">
               <checklist-indicator :checklist="work.checklist ? work.checklist : []"/>
             </span>
@@ -61,8 +58,7 @@
         </div>
 
         <span style="flex-grow: 1"/>
-        <user-avatar v-for="c in contributions" :key="c.id" :rounded="c.endTime != null" style="margin-right: 2px"
-          :userId="c.contributorId" :username="c.contributorName"/>
+        <contribution :work="work" :contributions="contributions" @workContributionChanged="onWorkContributionChanged"/>
       </div>
 
       <div class="work_trace_row card-row" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
@@ -88,19 +84,19 @@
 <script>
 import { formatTime, formatTimeDuration } from '../../times'
 import { categoryStyle } from '../../themes'
-import UserAvatar from '../../userprofile/UserAvatar'
 import VClamp from 'vue-clamp'
 import client from '../../flywheel'
-import CheckitemList from '../checklist/checkitem-list.vue'
-import ChecklistIndicator from '../checklist/checkitem-indicator.vue'
+import Checklist from '../checklist/checklist.vue'
+import ChecklistIndicator from '../checklist/checklist-indicator.vue'
+import Contribution from '../contribution/contribution.vue'
 
 export default {
   name: 'WorkCard',
   components: {
-    UserAvatar,
     VClamp,
-    CheckitemList,
-    ChecklistIndicator
+    Checklist,
+    ChecklistIndicator,
+    Contribution
   },
   props: {
     work: null,
@@ -114,47 +110,8 @@ export default {
     onWorkDetail () {
       this.$emit('titleClicked', this.work)
     },
-    beginContribution () {
-      const vue = this
-      const actionResult = {}
-      this.$confirm(`are you really want to be a contributor of the work "${this.work.name}" ?`, 'Confirm', {
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        type: 'warning'
-      }).then(() => {
-        return client.beginContribution(this.work.identifier, this.$store.state.securityContext.identity.id).then(resp => {
-          vue.$message({ type: 'success', message: 'action success' })
-          actionResult.success = true
-        }).catch(err => {
-          vue.$message({ type: 'error', message: 'action failed: ' + err })
-        })
-      }).catch(() => {
-      }).finally(() => {
-        if (actionResult.success) {
-          vue.$emit('workContributionChanged', vue.work)
-        }
-      })
-    },
-    finishContribution (effective) {
-      const vue = this
-      const actionResult = {}
-      this.$confirm(`are you really want to ${effective ? 'finish' : 'discard'} contribution on the work "${this.work.name}" ?`, 'Confirm', {
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
-        type: 'warning'
-      }).then(() => {
-        return client.finishContribution(this.work.identifier, this.$store.state.securityContext.identity.id, effective).then(resp => {
-          vue.$message({ type: 'success', message: 'action success' })
-          actionResult.success = true
-        }).catch(err => {
-          vue.$message({ type: 'error', message: 'action failed: ' + err })
-        })
-      }).catch(() => {
-      }).finally(() => {
-        if (actionResult.success) {
-          vue.$emit('workContributionChanged', vue.work)
-        }
-      })
+    onWorkContributionChanged (work) {
+      this.$emit('workContributionChanged', work)
     },
     archiveWork () {
       const vue = this

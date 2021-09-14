@@ -1,5 +1,5 @@
 <template>
-  <avatar :src="avatarUrl" :username="username" :title="username" :size="size?size:30" :rounded="rounded" :parser="parser"/>
+  <avatar :src="avatarUrl" :username="username" :title="username" :size="size?size:27" :rounded="rounded" :parser="parser"/>
 </template>
 
 <script>
