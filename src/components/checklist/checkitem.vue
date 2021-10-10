@@ -79,14 +79,12 @@ export default {
         cancelButtonText: 'Cancel',
         inputValidator: v => v === 'DELETE',
         inputErrorMessage: 'invalid input'
-      }).then(({ value }) => {
-        if (value === 'DELETE') {
-          client.deleteWorkCheckItem(id).then(() => {
-            this.$emit('checkItemsUpdated', _.filter(this.work.checklist, c => c.id !== id))
-          }).catch(err => {
-            this.$notify.error({ title: 'request failed', message: err })
-          })
-        }
+      }).then(({ input }) => {
+        client.deleteWorkCheckItem(id).then(() => {
+          this.$emit('checkItemsUpdated', _.filter(this.work.checklist, c => c.id !== id))
+        }).catch(err => {
+          this.$notify.error({ title: 'request failed', message: err })
+        })
       })
     },
     updateCheckItemName () {

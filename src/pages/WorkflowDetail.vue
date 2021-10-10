@@ -13,9 +13,15 @@
         </div>
       </div>
       <el-divider/>
-      <div>state machine</div>
-      <span v-if="!workflow">Loading...</span>
-      <state-machine-detail v-if="workflow" :id="workflow.id" :initial-state-machine="workflow.stateMachine"/>
+
+      <div>properties</div>
+      <span v-if="!workflow">Loading properties...</span>
+      <property-definition-list v-else :workflowId="workflow.id" style="margin-left: 5%; margin-right: 5%"/>
+
+      <el-divider/>
+      <div>states</div>
+      <span v-if="!workflow">Loading states...</span>
+      <state-machine-detail v-else :id="workflow.id" :initial-state-machine="workflow.stateMachine"/>
     </div>
   </el-card>
 </template>
@@ -25,12 +31,14 @@ import client from '../flywheel'
 import { categoryStyle } from '../themes'
 import WorkflowDelete from '../components/workflow/WorkflowDelete'
 import StateMachineDetail from '../components/statemachine/StateMachineDetail'
+import PropertyDefinitionList from '../components/property-definition/property-definition-list.vue'
 import statesConst from '../states/statesConst'
 export default {
   name: 'WorkflowDetail',
   components: {
     WorkflowDelete,
-    StateMachineDetail
+    StateMachineDetail,
+    PropertyDefinitionList
   },
   data () {
     return {

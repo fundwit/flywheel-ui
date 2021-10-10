@@ -19,15 +19,13 @@ export default {
         cancelButtonText: 'Cancel',
         inputValidator: v => v === this.projectLabel.name,
         inputErrorMessage: 'invalid input'
-      }).then(({ value }) => {
-        if (value === this.projectLabel.name) {
-          return client.deleteProjectLabel(vue.projectLabel.id).then(resp => {
-            vue.$message({ type: 'success', message: 'delete success' })
-            deleteOutput.result = true
-          }).catch(err => {
-            vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
-          })
-        }
+      }).then(({ input }) => {
+        return client.deleteProjectLabel(vue.projectLabel.id).then(resp => {
+          vue.$message({ type: 'success', message: 'delete success' })
+          deleteOutput.result = true
+        }).catch(err => {
+          vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
+        })
       }).catch(() => {
       }).finally(() => {
         if (deleteOutput.result) {

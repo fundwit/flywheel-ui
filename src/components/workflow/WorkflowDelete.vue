@@ -19,15 +19,13 @@ export default {
         cancelButtonText: 'Cancel',
         inputPattern: /DELETE/,
         inputErrorMessage: 'invalid input'
-      }).then(({ value }) => {
-        if (value === 'DELETE') {
-          return client.deleteWorkflow(this.workflow.id).then(resp => {
-            vue.$message({ type: 'success', message: 'delete success' })
-            deleteOutput.result = true
-          }).catch(err => {
-            vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
-          })
-        }
+      }).then(({ input }) => {
+        return client.deleteWorkflow(this.workflow.id).then(resp => {
+          vue.$message({ type: 'success', message: 'delete success' })
+          deleteOutput.result = true
+        }).catch(err => {
+          vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
+        })
       }).catch(() => {
       }).finally(() => {
         if (deleteOutput.result) {

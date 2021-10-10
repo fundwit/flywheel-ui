@@ -19,15 +19,13 @@ export default {
         cancelButtonText: 'Cancel',
         inputValidator: v => v === this.projectMember.memberName,
         inputErrorMessage: 'invalid input'
-      }).then(({ value }) => {
-        if (value === this.projectMember.memberName) {
-          return client.deleteProjectMember(vue.projectMember.projectId, vue.projectMember.memberId).then(resp => {
-            vue.$message({ type: 'success', message: 'delete success' })
-            deleteOutput.result = true
-          }).catch(err => {
-            vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
-          })
-        }
+      }).then(({ input }) => {
+        return client.deleteProjectMember(vue.projectMember.projectId, vue.projectMember.memberId).then(resp => {
+          vue.$message({ type: 'success', message: 'delete success' })
+          deleteOutput.result = true
+        }).catch(err => {
+          vue.$message({ type: 'error', message: 'delete failed: ' + err.response.data.message })
+        })
       }).catch(() => {
       }).finally(() => {
         if (deleteOutput.result) {

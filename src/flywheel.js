@@ -107,6 +107,20 @@ export class FlywheelClient {
       { flowId: flowID, workId: workID, fromState: from, toState: to }).then(r => r.data)
   }
 
+  async createWorkflowProperty (flowId, requestBody) {
+    return axios.post(this.withPath(`/v1/workflows/${flowId}/properties`), requestBody)
+      .then(r => r.data)
+  }
+
+  async deleteWorkflowProperty (id) {
+    return axios.delete(this.withPath(`/v1/workflows/properties/${id}`))
+  }
+
+  async listWorkflowPropertyDefinitions (flowId) {
+    return axios.get(this.withPath(`/v1/workflows/${flowId}/properties`))
+      .then(r => r.data)
+  }
+
   async createWork (creationForm) {
     return axios.post(this.withPath('/v1/works'), creationForm).then(r => r.data)
   }
