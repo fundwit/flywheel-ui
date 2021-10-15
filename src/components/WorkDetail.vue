@@ -211,6 +211,9 @@ export default {
         return
       }
       client.addWorkLabelRelation(this.work.id, label.id).then(resp => {
+        if (!this.workLabels) {
+          this.workLabels = []
+        }
         this.workLabels.push(label)
         this.work.labels = this.workLabels
         this.$emit('workUpdated', this.work)
