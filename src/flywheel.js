@@ -254,6 +254,15 @@ export class FlywheelClient {
   async deleteWorkLabelRelation (workId, labelId) {
     return axios.delete(this.withPath(`/v1/work-label-relations?workId=${workId}&labelId=${labelId}`), {})
   }
+
+  async assignWorkPropertyValue (workId, name, value) {
+    return axios.patch(this.withPath('/v1/work-properties'), { workId: workId, name: name, value: value })
+  }
+
+  async queryWorkPropertyValues (workId) {
+    return axios.get(this.withPath(`/v1/work-properties?workId=${workId}`))
+      .then(r => r.data)
+  }
 }
 
 export const client = new FlywheelClient('/api')

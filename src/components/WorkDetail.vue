@@ -52,25 +52,24 @@
           <div id="state-area" style="padding: 10px;">
             <el-row class="property-row">
               <el-col :span="8">
-                <span class="property-title">Type: </span>
-                <span>{{work.type.name}}</span>
-              </el-col>
-              <el-col :span="8">
-                <span class="property-title">Workflow: </span>
-                <span>{{work.type.name}}</span>
-              </el-col>
-              <el-col :span="8">
                 <span class="property-title">Current State: </span>
                 <span>{{work.stateName}}</span>
-                <span v-if="work.state.category !== 2">({{formatTimeDuration(work.stateBeginTime, null)}})</span>
+                <span v-if="work.state.category !== 3 && work.state.category !== 4"> ({{formatTimeDuration(work.stateBeginTime, null)}})</span>
               </el-col>
             </el-row>
             <el-row class="property-row">
               <el-col :span="24">
                 <span class="property-title">Creation At: </span>
-                <span>({{ formatTime(work.createTime) }}) {{work.createTime}}</span>
+                <span>{{work.createTime}} ({{ formatTime(work.createTime) }})</span>
               </el-col>
             </el-row>
+          </div>
+
+          <el-divider/>
+          <div id="property-area" style="padding: 10px;">
+              <div>Properties</div>
+              <property-value-list v-if="work" :work="work"/>
+              <div v-else>work is invalid</div>
           </div>
 
           <el-divider/>
@@ -79,11 +78,7 @@
             <checkitem-list :work="work" @checkItemsUpdated="onCheckitemsUpdated"/>
           </div>
 
-          <div id="property-area" style="padding: 10px;">
-          </div>
-
           <el-divider/>
-
           <div id="trace-area" style="padding: 10px;">
             <div>Process Progress</div>
 
@@ -140,6 +135,7 @@ import WorkDelete from './work/WorkDelete'
 import CheckitemList from './checklist/checklist.vue'
 import LabelSelector from './label/label-selector.vue'
 import ChecklistIndicator from './checklist/checklist-indicator.vue'
+import PropertyValueList from './property-value/property-value-list.vue'
 
 export default {
   name: 'WorkDetail',
@@ -149,6 +145,7 @@ export default {
   components: {
     WorkDelete,
     LabelSelector,
+    PropertyValueList,
     CheckitemList,
     ChecklistIndicator
   },
