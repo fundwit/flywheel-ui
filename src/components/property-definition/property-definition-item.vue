@@ -5,6 +5,9 @@
       <div style="margin: 2px;">{{property.name}}</div>
       <div style="margin: 2px; flex-grow: 1">{{property.title}}</div>
 
+      <div>
+        <property-select-option v-if="property.type === 'select'" :editable="false" :initOptions="property.options"/>
+      </div>
       <el-button v-if="editable" style="margin: 2px; padding: 4px 8px;" type="primary" size="mini" icon="el-icon-edit-outline"></el-button>
       <el-button @click="deleteProperty" style="margin: 2px; padding: 4px 8px;" type="danger" size="mini" icon="el-icon-circle-close"></el-button>
     </div>
@@ -15,9 +18,13 @@
 
 <script>
 import { client } from '../../flywheel'
+import PropertySelectOption from './property-select-option.vue'
 
 export default {
-  name: 'PropertyText',
+  name: 'PropertyDefinitionItem',
+  components: {
+    PropertySelectOption
+  },
   props: {
     property: null
   },

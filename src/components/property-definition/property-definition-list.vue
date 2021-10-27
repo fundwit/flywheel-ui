@@ -12,7 +12,11 @@
 
     <div v-if="propertyDefinitions">
       <div v-for="p in propertyDefinitions" p :key="p.id" style="margin-top: 5px;">
-        <property-text v-if="p.type === 'text'" :property="p" @action-result="onPropertyDefinitionChanged"/>
+        <property-definition-item v-if="p.type === 'text'" :property="p" @action-result="onPropertyDefinitionChanged"/>
+        <property-definition-item v-else-if="p.type === 'textarea'" :property="p" @action-result="onPropertyDefinitionChanged"/>
+        <property-definition-item v-else-if="p.type === 'number'" :property="p" @action-result="onPropertyDefinitionChanged"/>
+        <property-definition-item v-else-if="p.type === 'time'" :property="p" @action-result="onPropertyDefinitionChanged"/>
+        <property-definition-item v-else-if="p.type === 'select'" :property="p" @action-result="onPropertyDefinitionChanged"/>
         <span v-else>unsupported type: {{p.type}} {{p.name}}</span>
       </div>
     </div>
@@ -20,7 +24,7 @@
 
     <el-dialog v-if="propertyCreating" title="Create Property" :visible="true" width="80%"
                :show-close="false" :close-on-press-escape="false" :close-on-click-modal="false">
-      <property-text-edit :workflowId="workflowId" @action-result="onPropertyCreateActionResult"/>
+      <property-definition-edit :workflowId="workflowId" @action-result="onPropertyCreateActionResult"/>
     </el-dialog>
 
   </div>
@@ -28,8 +32,8 @@
 
 <script>
 import { client } from '../../flywheel'
-import PropertyText from './property-text.vue'
-import PropertyTextEdit from './property-text-edit.vue'
+import PropertyDefinitionItem from './property-definition-item.vue'
+import PropertyDefinitionEdit from './property-definition-edit.vue'
 
 export default {
   name: 'PropertyDefinitionList',
@@ -37,8 +41,8 @@ export default {
     workflowId: null
   },
   components: {
-    PropertyText,
-    PropertyTextEdit
+    PropertyDefinitionItem,
+    PropertyDefinitionEdit
   },
   mounted () {
     this.loadPropertyDefinitions()

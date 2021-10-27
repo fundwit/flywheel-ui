@@ -3,6 +3,10 @@
     <div v-if="properties">
       <div v-for="p in properties" p :key="p.id" style="margin-top: 5px;">
         <property-value-text v-if="p.type === 'text'" :work="work" :property="p" @workPropertyValueUpdated="onWorkPropertyValueUpdated"/>
+        <property-value-textarea v-else-if="p.type === 'textarea'" :work="work" :property="p" @workPropertyValueUpdated="onWorkPropertyValueUpdated"/>
+        <property-value-number v-else-if="p.type === 'number'" :work="work" :property="p" @workPropertyValueUpdated="onWorkPropertyValueUpdated"/>
+        <property-value-time v-else-if="p.type === 'time'" :work="work" :property="p" @workPropertyValueUpdated="onWorkPropertyValueUpdated"/>
+        <property-value-select v-else-if="p.type === 'select'" :work="work" :property="p" @workPropertyValueUpdated="onWorkPropertyValueUpdated"/>
         <span v-else>unsupported type: {{p.type}} {{p.name}}</span>
       </div>
     </div>
@@ -13,6 +17,10 @@
 <script>
 import { client } from '../../flywheel'
 import PropertyValueText from './property-value-text.vue'
+import PropertyValueTextarea from './property-value-textarea.vue'
+import PropertyValueNumber from './property-value-number.vue'
+import PropertyValueTime from './property-value-time.vue'
+import PropertyValueSelect from './property-value-select.vue'
 
 export default {
   name: 'PropertyValueList',
@@ -20,7 +28,11 @@ export default {
     work: null
   },
   components: {
-    PropertyValueText
+    PropertyValueText,
+    PropertyValueTextarea,
+    PropertyValueNumber,
+    PropertyValueTime,
+    PropertyValueSelect
   },
   mounted () {
     this.loadPropertyValues()

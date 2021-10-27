@@ -8,12 +8,13 @@
 
       <div style="margin: 2px; flex-grow: 1">
         <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-          <div v-if="property.value">{{property.value}}</div>
+          <div v-if="property.value">{{property.value | formatDate}}</div>
           <div v-else style="color: #cccccc">NA</div>
 
           <el-popover placement="top-start" trigger="manual" v-model="editEnabled">
             <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-              <el-input size="mini" v-model="editingValue"></el-input>
+              <el-date-picker size="mini" v-model="editingValue" type="date"/>
+
               <el-button @click="updatePropertyValue"
                 style="margin: 2px; padding: 4px 8px;" type="success" size="mini" icon="el-icon-circle-check"/>
               <el-button @click="editEnabled = false; editingValue = ''"
@@ -36,7 +37,7 @@
 import { client } from '../../flywheel'
 
 export default {
-  name: 'PropertyValueText',
+  name: 'PropertyValueTime',
   props: {
     work: null,
     property: null
@@ -49,12 +50,7 @@ export default {
   },
   methods: {
     updatePropertyValue () {
-      if (this.editingValue.trim().length === 0) {
-        this.$notify.warning({ title: 'Warning', message: 'input must not be empty' })
-        return
-      }
-
-      client.assignWorkPropertyValue(this.work.id, this.property.name, this.editingValue).then((resp) => {
+      client.assignWorkPropertyValue(this.work.id, this.property.name, this.editingValue.toISOString()).then((resp) => {
         this.editingValue = ''
         this.editEnabled = false
         this.$emit('workPropertyValueUpdated', resp.data)

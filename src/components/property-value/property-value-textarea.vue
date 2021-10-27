@@ -8,12 +8,14 @@
 
       <div style="margin: 2px; flex-grow: 1">
         <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-          <div v-if="property.value">{{property.value}}</div>
+          <div v-if="property.value">
+            <el-input type="textarea" readonly autosize size="mini" v-model="property.value"></el-input>
+          </div>
           <div v-else style="color: #cccccc">NA</div>
 
           <el-popover placement="top-start" trigger="manual" v-model="editEnabled">
             <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-              <el-input size="mini" v-model="editingValue"></el-input>
+              <el-input type="textarea" autosize size="mini" v-model="editingValue"></el-input>
               <el-button @click="updatePropertyValue"
                 style="margin: 2px; padding: 4px 8px;" type="success" size="mini" icon="el-icon-circle-check"/>
               <el-button @click="editEnabled = false; editingValue = ''"
@@ -36,7 +38,7 @@
 import { client } from '../../flywheel'
 
 export default {
-  name: 'PropertyValueText',
+  name: 'PropertyValueTextarea',
   props: {
     work: null,
     property: null

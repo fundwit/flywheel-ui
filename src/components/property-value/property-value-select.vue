@@ -13,7 +13,10 @@
 
           <el-popover placement="top-start" trigger="manual" v-model="editEnabled">
             <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-              <el-input size="mini" v-model="editingValue"></el-input>
+              <el-select v-model="editingValue" placeholder="请选择">
+                <el-option v-for="o in property.options.selectEnums" :key="o" :label="o" :value="o"/>
+              </el-select>
+
               <el-button @click="updatePropertyValue"
                 style="margin: 2px; padding: 4px 8px;" type="success" size="mini" icon="el-icon-circle-check"/>
               <el-button @click="editEnabled = false; editingValue = ''"
@@ -36,7 +39,7 @@
 import { client } from '../../flywheel'
 
 export default {
-  name: 'PropertyValueText',
+  name: 'PropertyValueSelect',
   props: {
     work: null,
     property: null
@@ -54,7 +57,7 @@ export default {
         return
       }
 
-      client.assignWorkPropertyValue(this.work.id, this.property.name, this.editingValue).then((resp) => {
+      client.assignWorkPropertyValue(this.work.id, this.property.name, this.editingValue.trim()).then((resp) => {
         this.editingValue = ''
         this.editEnabled = false
         this.$emit('workPropertyValueUpdated', resp.data)
