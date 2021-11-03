@@ -32,6 +32,7 @@
             <el-divider direction="vertical"/>
             <router-link :to="{ name: 'ProjectSettingsPage', params: { id: projectId }}"><i class="el-icon-menu"/> Preference</router-link>
           </span>
+          <span v-else>Welcome</span>
         </el-col>
 
         <el-col :span="6">
@@ -54,6 +55,9 @@
             <el-divider direction="vertical"/>
             <a href="javascript:void(0)" @click="onLogout"><i class="el-icon-switch-button"/> logout</a>
           </span>
+          <span v-else style="float: right">
+            <a href="javascript:void(0)" @click="showLoginFrame = true"><i class="el-icon-user"/> Sign in</a>
+          </span>
         </el-col>
       </el-row>
     </div>
@@ -61,6 +65,10 @@
     <Intro v-if="!$store.state.isAuthenticated && !isLoading"/>
     <ProjectGuide v-if="$store.state.isAuthenticated && (!$store.state.securityContext.projectRoles || $store.state.securityContext.projectRoles.length === 0)"/>
     <router-view :class="{hidden: !$store.state.isAuthenticated }"/>
+
+    <el-dialog title="Sign in" v-if="showLoginFrame" :visible="true" @close="showLoginFrame=false" width="30%" center>
+      <login-frame @loginSuccess="onSignIn"/>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,17 +79,20 @@ import Intro from '@/components/Intro.vue'
 import ProjectGuide from './components/ProjectGuide.vue'
 import _ from 'lodash'
 import UserAvatar from './userprofile/UserAvatar.vue'
+import LoginFrame from './account/login-frame.vue'
 
 export default {
   name: 'App',
   components: {
     Intro,
     ProjectGuide,
-    UserAvatar
+    UserAvatar,
+    LoginFrame
   },
   data () {
     return {
-      isLoading: true
+      isLoading: true,
+      showLoginFrame: false
     }
   },
   computed: {
@@ -106,6 +117,10 @@ export default {
     }
   },
   methods: {
+    onSignIn () {
+      this.showLoginFrame = false
+      this.$router.push({ name: 'Dashboard' })
+    },
     onLogout () {
       const mask = this.$loading({ lock: true, text: 'processing', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
       client.logout().then(() => {
