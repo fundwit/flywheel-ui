@@ -200,4 +200,29 @@ body {
 .active-item {
   cursor: pointer;
 }
+.fw-dialog .el-dialog__header {
+  padding: 0
+}
+.fw-dialog .el-dialog__body {
+  padding: 0
+}
+.fw-flex {
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+.fw-flex-v-center {
+  align-items: center;
+}
+.fw-flex-v-top {
+  align-items: flex-start;
+}
+.fw-flex-grow {
+  flex-grow: 1;
+}
+.fw-text-comment {
+  font-size: 0.8em;
+  color: #999;
+}
 </style>

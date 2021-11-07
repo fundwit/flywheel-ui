@@ -11,7 +11,16 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(security)
 Vue.filter('formatDate', (value) => {
-  return Moment(value).format('YYYY-MM-DD')
+  if (value) {
+    return Moment(value).format('YYYY-MM-DD')
+  }
+  return ''
+})
+Vue.filter('formatDateTimeMin', (value) => {
+  if (value) {
+    return Moment(value).format('YYYY-MM-DD HH:mm')
+  }
+  return ''
 })
 
 new Vue({

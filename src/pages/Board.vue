@@ -41,8 +41,10 @@
       <work-creating-form :selectedProjectId="$route.query.projectId" @action-result="onWorkCreatingResult"/>
     </el-dialog>
 
-    <el-dialog v-if="workDetail" :show-close="true" :visible="true" :close-on-click-modal="false" width="60%" :before-close="onCloseDetail">
-      <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted" @workUpdated="onWorkUpdated"/>
+    <el-dialog v-if="workDetail" :show-close="false" :visible="true" :close-on-click-modal="true" width="80%" :before-close="onCloseDetail"
+      class="fw-dialog">
+      <work-detail :work-id="workDetail.id" @workDeleted="onWorkDeleted" @workUpdated="onWorkUpdated"
+       @workContributionChanged="onWorkContributionChanged"/>
     </el-dialog>
 
     <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch; width: 100%; overflow: auto">

@@ -4,15 +4,12 @@
         invalid work id '{{workId}}'
       </div>
 
-      <div v-if="work" id="work-detail">
-        <div id="work-detail-actions" style="margin-bottom: 10px">
-          <work-delete :work="work" @workDeleted="onWorkDeleted"/>
-        </div>
+      <div v-if="work" id="work-detail" style="padding-top: 10px; background-color:white">
 
-        <el-divider/>
-
-        <div id="work-detail-header" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: stretch">
-          <div style="padding: 10px; font-size: 1.0rem">
+         <!-- identifier & title & actions -->
+        <div id="work-identity-and-actions" class="fw-flex" style="background-color: #EEE;">
+          <!-- identifier -->
+          <div style="padding: 10px;">
             <el-tag v-if="workflow" size="small" :style="{ backgroundColor: workflow.themeColor }" effect="dark">
               <i :class="workflow.themeIcon ? workflow.themeIcon : 'el-icon-s-claim'"/>
               {{workflow.name}}
@@ -20,65 +17,139 @@
             <span> {{ work.identifier }} </span>
           </div>
 
-          <div style="flex-grow: 1; padding: 10px; font-size: 1.0rem">
-            <span v-if="!isNameEditing"> {{work.name}}</span>
-            <el-input v-if="isNameEditing" size="mini" style="width: 100%" v-model="editingName"/>
+          <!-- title -->
+          <div class="fw-flex-grow fw-flex" style="padding: 10px;">
+            <div class="fw-flex-grow">
+              <span v-if="!isNameEditing"> {{work.name}}</span>
+              <el-input v-if="isNameEditing" size="mini" style="width: 100%" v-model="editingName"/>
+            </div>
+
+            <div>
+              <span v-if="!isNameEditing">
+                <el-button @click="onEditNameStarted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-edit-outline" type="primary" size="small"></el-button>
+              </span>
+
+              <span v-if="isNameEditing">
+                <el-button @click="onEditNameSubmitted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-check" type="success" size="mini"></el-button>
+                <el-button @click="onEditNameCanceled" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-close" type="warning" size="mini"></el-button>
+              </span>
+            </div>
           </div>
 
-          <div style="padding: 10px; font-size: 1.0rem">
-            <span v-if="!isNameEditing">
-              <el-button @click="onEditNameStarted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-edit-outline" type="primary" size="small"></el-button>
-            </span>
-
-            <span v-if="isNameEditing">
-              <el-button @click="onEditNameSubmitted" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-check" type="success" size="mini"></el-button>
-              <el-button @click="onEditNameCanceled" style="margin-left: 5px; padding: 5px 8px" icon="el-icon-close" type="warning" size="mini"></el-button>
-            </span>
-          </div>
+          <!-- actions -->
+          <el-dropdown :hide-on-click="false">
+            <div style="padding-top: 10px">
+               <i class="el-icon-more" style="padding: 5px 8px"/>
+            </div>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item><work-delete :work="work" @workDeleted="onWorkDeleted"/></el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
 
-        <el-divider/>
-        <div id="work-detail-label" style="padding: 10px;">
-          Label:
-          <el-tag v-for="label in workLabels" :key="label.name" closable
-            :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label"
-            @close="onDeleteWorkLabel(label)">
-            {{label.name}}
-          </el-tag>
-          <label-selector @labelSelected="onLabelSelected" :projectId="this.work.projectId" :labelFilters="workLabels"/>
-        </div>
+        <!-- body-frame -->
+        <div id="body-frame" style="width: 90%; margin: 5px auto; margin-bottom: 10px;">
+          <!-- label -->
+          <div id="work-detail-label" style="font-size: 0.8rem; margin-left: 90px">
+            <el-tag v-for="label in workLabels" :key="label.name" closable
+              :style="{ backgroundColor: label.themeColor }" effect="dark" class="work-type-label"
+              @close="onDeleteWorkLabel(label)">
+              {{label.name}}
+            </el-tag>
+            <label-selector @labelSelected="onLabelSelected" :projectId="this.work.projectId" :labelFilters="workLabels"/>
+          </div>
+          <el-divider/>
 
-        <div id="work-detail-body">
-          <div id="state-area" style="padding: 10px;">
-            <el-row class="property-row">
-              <el-col :span="8">
-                <span class="property-title">Current State: </span>
-                <span>{{work.stateName}}</span>
-                <span v-if="work.state.category !== 3 && work.state.category !== 4"> ({{formatTimeDuration(work.stateBeginTime, null)}})</span>
+          <!-- time-stat -->
+          <div id="time-stat" style="justify-content: space-between" class="fw-flex">
+            <div id="status">
+              <el-tag style="background-color: red; color: white;" class="work-type-label">{{work.stateName}}</el-tag>
+            </div>
+
+            <div v-if="work.state.category !== 3 && work.state.category !== 4" class="fw-flex">
+              <div title="Duration in Current State" style="margin-right: 5px">
+                <i class="el-icon-timer"/>
+              </div>
+
+              <div style="white-space:nowrap">
+                <div title="Duration in Current State">
+                  {{formatTimeDuration(work.stateBeginTime, null)}}
+                  <span class="fw-text-comment"> spent on current state</span>
+                </div>
+                <div class="fw-text-comment">
+                  <span title="State Begin Time">{{work.stateBeginTime | formatDateTimeMin}}</span>
+                  <span> - Now</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fw-flex">
+              <div title="Duration in Process" style="margin-right: 5px">
+                <i class="el-icon-stopwatch"/>
+              </div>
+              <div style="white-space:nowrap">
+                <div title="Duration in Process">
+                  {{formatTimeDuration(work.processBeginTime, work.processEndTime)}}
+                  <span class="fw-text-comment"> spent on all in-process states</span>
+                </div>
+                <div class="fw-text-comment">
+                  <span title="Process Begin Time">{{work.processBeginTime | formatDateTimeMin}} - </span>
+                  <span title="Process End Time" v-if="work.processEndTime">{{work.processEndTime | formatDateTimeMin}} </span>
+                  <span v-else>Now</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fw-flex">
+              <div title="Duration of Total Life" style="margin-right: 5px">
+                <i class="el-icon-time"/>
+              </div>
+              <div style="white-space:nowrap">
+                <div title="Duration of Total Life">
+                  {{formatTimeDuration(work.createTime, work.processEndTime)}}
+                  <span class="fw-text-comment"> spent on the work overall</span>
+                </div>
+                <div class="fw-text-comment">
+                  <span title="Create Time">{{work.createTime | formatDateTimeMin}} - </span>
+                  <span title="Process End Time" v-if="work.processEndTime">{{work.processEndTime | formatDateTimeMin}}</span>
+                  <span v-else>Now</span>
+                </div>
+              </div>
+            </div>
+          </div> <!-- time-stat end -->
+
+          <el-divider/>
+
+          <el-row id="tasks-and-properties" :gutter="20">
+             <el-col :span="6">
+                <!-- property -->
+                <div id="property-area" class="fw-flex-grow" style="padding: 10px;">
+                  <property-value-list v-if="work" :work="work" :textareaIgnore="true"/>
+                  <div v-else>work is invalid</div>
+                </div>
+             </el-col>
+              <el-col :span="18">
+                <!-- task -->
+                <div id="checklist-area" class="fw-flex-grow" style="padding: 10px;">
+                  <div class="fw-flex">
+                    <checklist-indicator class="fw-flex-grow" :checklist="work.checklist"/>
+                    <contribution :work="work" :contributions="contributions" @workContributionChanged="onWorkContributionChanged"/>
+                  </div>
+
+                  <checkitem-list :work="work" :contributions="contributions"
+                    @workContributionChanged="onWorkContributionChanged" @checkItemsUpdated="onCheckitemsUpdated"/>
+                </div>
+
+                <!-- textarea property -->
+                <div id="property-area" class="fw-flex-grow" style="padding: 10px;">
+                  <property-value-list v-if="work" :work="work" :textareaOnly="true"/>
+                  <div v-else>work is invalid</div>
+                </div>
               </el-col>
-            </el-row>
-            <el-row class="property-row">
-              <el-col :span="24">
-                <span class="property-title">Creation At: </span>
-                <span>{{work.createTime}} ({{ formatTime(work.createTime) }})</span>
-              </el-col>
-            </el-row>
-          </div>
+          </el-row>
 
           <el-divider/>
-          <div id="property-area" style="padding: 10px;">
-              <div>Properties</div>
-              <property-value-list v-if="work" :work="work"/>
-              <div v-else>work is invalid</div>
-          </div>
 
-          <el-divider/>
-          <div id="checklist-area" style="padding: 10px;">
-            <checklist-indicator :checklist="work.checklist"/>
-            <checkitem-list :work="work" @checkItemsUpdated="onCheckitemsUpdated"/>
-          </div>
-
-          <el-divider/>
           <div id="trace-area" style="padding: 10px;">
             <div>Process Progress</div>
 
@@ -111,7 +182,7 @@
                         <div slot="reference" class="name-wrapper">
                           <div :class="'state-category-stack-' + scope.row.category">
                             <el-progress :status="scope.row.currentStepTimeRange === header.timeRange ? 'warning' : 'success'"
-                                         :text-inside="true" stroke-linecap="square" :stroke-width="23" :show-text="false" :percentage="100"/>
+                                        :text-inside="true" stroke-linecap="square" :stroke-width="23" :show-text="false" :percentage="100"/>
                           </div>
                         </div>
                       </el-popover>
@@ -120,10 +191,9 @@
                 </el-table>
               </div>
             </div>
-          </div>
-
-        </div>
-      </div>
+          </div> <!-- trace end -->
+        </div> <!-- body-frame end -->
+      </div> <!-- work-detail end -->
     </div>
 </template>
 
@@ -136,6 +206,7 @@ import CheckitemList from './checklist/checklist.vue'
 import LabelSelector from './label/label-selector.vue'
 import ChecklistIndicator from './checklist/checklist-indicator.vue'
 import PropertyValueList from './property-value/property-value-list.vue'
+import Contribution from './contribution/contribution.vue'
 
 export default {
   name: 'WorkDetail',
@@ -147,12 +218,18 @@ export default {
     LabelSelector,
     PropertyValueList,
     CheckitemList,
-    ChecklistIndicator
+    ChecklistIndicator,
+    Contribution
   },
   data () {
     return {
       work: null,
       workflow: null,
+
+      contributions: [],
+      contributionsLoading: false,
+      contribuitonsLoadingError: null,
+
       workProcessSteps: [],
       processTraceTableData: [],
       processTraceTableHeaders: [],
@@ -234,6 +311,21 @@ export default {
     onCheckitemsUpdated (checkitems) {
       this.$set(this.work, 'checklist', checkitems)
       this.$emit('workUpdated', this.work)
+    },
+    onWorkContributionChanged () {
+      this.loadContributions()
+      this.$emit('workContributionChanged', this.work)
+    },
+    loadContributions () {
+      this.contributionsLoading = true
+      client.queryContributions({ workKeys: [this.work.identifier] }).then(data => {
+        this.contributions = _.filter(data, d => d.effective)
+      }).catch((error) => {
+        this.contribuitonsLoadingError = 'failed to load contributions'
+        this.$notify.error({ title: 'Error', message: 'failed to load contributions: ' + error })
+      }).finally(() => {
+        this.contributionsLoading = false
+      })
     }
   },
   watch: {
@@ -282,6 +374,8 @@ export default {
       }).finally(() => {
         vue.workProcessStepsLoading = false
       })
+
+      this.loadContributions()
     }
   },
   mounted () {

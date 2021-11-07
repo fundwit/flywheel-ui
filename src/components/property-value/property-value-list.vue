@@ -16,6 +16,7 @@
 
 <script>
 import { client } from '../../flywheel'
+import _ from 'lodash'
 import PropertyValueText from './property-value-text.vue'
 import PropertyValueTextarea from './property-value-textarea.vue'
 import PropertyValueNumber from './property-value-number.vue'
@@ -25,7 +26,9 @@ import PropertyValueSelect from './property-value-select.vue'
 export default {
   name: 'PropertyValueList',
   props: {
-    work: null
+    work: null,
+    textareaOnly: null,
+    textareaIgnore: null
   },
   components: {
     PropertyValueText,
@@ -53,7 +56,14 @@ export default {
 
       client.queryWorkPropertyValues(this.work.id).then((propValuesOfWorks) => {
         if (propValuesOfWorks && propValuesOfWorks.length > 0) {
-          this.properties = propValuesOfWorks[0].propertyValues
+          const props = propValuesOfWorks[0].propertyValues
+          if (this.textareaOnly === true) {
+            this.properties = _.filter(props, p => p.type === 'textarea')
+          } else if (this.textareaIgnore === true) {
+            this.properties = _.filter(props, p => p.type !== 'textarea')
+          } else {
+            this.properties = props
+          }
         } else {
           this.properties = []
         }

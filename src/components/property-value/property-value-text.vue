@@ -1,18 +1,19 @@
 <template>
   <div>
-    <div v-if="property" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-      <div style="width: 3em">
-        <el-tag size="small" effect="dark">{{ property.type }}</el-tag>
+    <div v-if="property" class="fw-flex fw-flex-v-center">
+      <div style="width: 1em">
+        <i class="el-icon-document-remove"/>
+        <!-- <el-tag size="small" effect="dark">{{ property.type }}</el-tag> -->
       </div>
-      <div style="margin: 2px; width: 10em">{{property.title}} ({{property.name}})</div>
+      <div :title="property.name" style="margin: 2px; width: 6em">{{property.title}}</div>
 
       <div style="margin: 2px; flex-grow: 1">
-        <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+        <div class="fw-flex fw-flex-v-center">
           <div v-if="property.value">{{property.value}}</div>
           <div v-else style="color: #cccccc">NA</div>
 
           <el-popover placement="top-start" trigger="manual" v-model="editEnabled">
-            <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+            <div class="fw-flex fw-flex-v-center">
               <el-input size="mini" v-model="editingValue"></el-input>
               <el-button @click="updatePropertyValue"
                 style="margin: 2px; padding: 4px 8px;" type="success" size="mini" icon="el-icon-circle-check"/>

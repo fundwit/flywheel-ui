@@ -1,20 +1,25 @@
 <template>
   <div>
-    <div v-if="property" style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-      <div style="width: 3em">
-        <el-tag size="small" effect="dark">{{ property.type }}</el-tag>
+    <div v-if="property" class="fw-flex fw-flex-v-top">
+      <div class="fw-flex fw-flex-v-center">
+        <div style="width: 1em">
+          <i class="el-icon-tickets"/>
+          <!-- <el-tag size="small" effect="dark">{{ property.type }}</el-tag> -->
+        </div>
+        <div :title="property.name" style="margin: 2px; width: 6em">{{property.title}}</div>
       </div>
-      <div style="margin: 2px; width: 10em">{{property.title}} ({{property.name}})</div>
 
       <div style="margin: 2px; flex-grow: 1">
-        <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
-          <div v-if="property.value">
+        <div class="fw-flex fw-flex-v-top">
+          <!-- value dispaly -->
+          <div v-if="property.value" class="fw-flex-grow">
             <el-input type="textarea" readonly autosize size="mini" v-model="property.value"></el-input>
           </div>
           <div v-else style="color: #cccccc">NA</div>
 
+          <!-- value edit -->
           <el-popover placement="top-start" trigger="manual" v-model="editEnabled">
-            <div style="display: flex; display: -webkit-flex; flex-wrap: nowrap; align-items: center;">
+            <div class="fw-flex fw-flex-v-top">
               <el-input type="textarea" autosize size="mini" v-model="editingValue"></el-input>
               <el-button @click="updatePropertyValue"
                 style="margin: 2px; padding: 4px 8px;" type="success" size="mini" icon="el-icon-circle-check"/>
