@@ -6,10 +6,13 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import security from './security'
 import Moment from 'moment'
+import vGanttChart from 'v-gantt-chart'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(security)
+Vue.use(vGanttChart)
+
 Vue.filter('formatDate', (value) => {
   if (value) {
     return Moment(value).format('YYYY-MM-DD')

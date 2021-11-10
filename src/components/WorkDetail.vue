@@ -151,46 +151,8 @@
           <el-divider/>
 
           <div id="trace-area" style="padding: 10px;">
-            <div>Process Progress</div>
+            <work-timeline :work="work"/>
 
-            <el-row class="property-row" style="padding-bottom: 10px;">
-              <el-col :span="24">
-                <span class="property-title">Begin Process At: </span>
-                <span>{{work.processBeginTime}} - {{work.processEndTime}} ({{formatTimeDuration(work.processBeginTime, work.processEndTime)}})</span>
-              </el-col>
-            </el-row>
-
-            <div v-if="workProcessStepsLoading"> Loading... </div>
-            <div v-if="!workProcessStepsLoading">
-              <div v-if="workProcessStepsLoadingError">
-                error:  {{workProcessStepsLoadingError}}
-              </div>
-              <div v-if="workProcessSteps">
-                <el-table id="process-traces-table" :data="processTraceTableData" :show-header="false" style="width: 100%" :cell-style="{padding: 0}">
-                  <el-table-column label="状态" width="180">
-                    <template slot-scope="scope">
-                      <div :class="'state-category-stack-' + scope.row.category">
-                        <i class="el-icon-time"></i>
-                        <span style="margin-left: 10px">{{ scope.row.name }}</span>
-                      </div>
-                    </template>
-                  </el-table-column>
-                  <el-table-column v-for="header in processTraceTableHeaders" label="" v-bind:key="header.timeRange">
-                    <template slot-scope="scope">
-                      <el-popover v-if="scope.row[header.timeRange]" trigger="hover" placement="top">
-                        <p>{{ scope.row[header.timeRange] }}</p>
-                        <div slot="reference" class="name-wrapper">
-                          <div :class="'state-category-stack-' + scope.row.category">
-                            <el-progress :status="scope.row.currentStepTimeRange === header.timeRange ? 'warning' : 'success'"
-                                        :text-inside="true" stroke-linecap="square" :stroke-width="23" :show-text="false" :percentage="100"/>
-                          </div>
-                        </div>
-                      </el-popover>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-            </div>
           </div> <!-- trace end -->
         </div> <!-- body-frame end -->
       </div> <!-- work-detail end -->
@@ -207,6 +169,7 @@ import LabelSelector from './label/label-selector.vue'
 import ChecklistIndicator from './checklist/checklist-indicator.vue'
 import PropertyValueList from './property-value/property-value-list.vue'
 import Contribution from './contribution/contribution.vue'
+import WorkTimeline from './work/work-timeline.vue'
 
 export default {
   name: 'WorkDetail',
@@ -215,6 +178,7 @@ export default {
   },
   components: {
     WorkDelete,
+    WorkTimeline,
     LabelSelector,
     PropertyValueList,
     CheckitemList,
@@ -230,11 +194,6 @@ export default {
       contributionsLoading: false,
       contribuitonsLoadingError: null,
 
-      workProcessSteps: [],
-      processTraceTableData: [],
-      processTraceTableHeaders: [],
-      workProcessStepsLoading: false,
-      workProcessStepsLoadingError: null,
       workLabels: [],
 
       isNameEditing: false,
@@ -263,14 +222,13 @@ export default {
         return
       }
 
-      const vue = this
       const changes = { name: this.editingName }
       client.updateWork(this.work.id, changes).then(data => {
-        vue.work = _.assignIn(vue.work, data)
-        vue.abortEditing()
-        vue.$emit('workUpdated', vue.work)
+        this.work = _.assignIn(this.work, data)
+        this.abortEditing()
+        this.$emit('workUpdated', this.work)
       }).catch(error => {
-        vue.$notify.error({ title: 'Error', message: '更新失败' + error })
+        this.$notify.error({ title: 'Error', message: '更新失败' + error })
       })
     },
     onEditNameCanceled () {
@@ -329,52 +287,7 @@ export default {
     }
   },
   watch: {
-    work (val) {
-      this.workProcessSteps = []
-      this.processTraceTableData = []
-      this.processTraceTableHeaders = []
-      this.workProcessStepsLoading = false
-      this.workProcessStepsLoadingError = null
-
-      if (!val) {
-        return
-      }
-
-      const vue = this
-      this.workProcessStepsLoading = true
-      client.queryWorkProcessSteps(this.workId).then((resp) => {
-        const currentStep = _.find(resp.data, step => !step.endTime)
-        if (currentStep) {
-          currentStep.isCurrentStep = true
-        }
-        vue.workProcessSteps = resp.data
-
-        vue.processTraceTableHeaders = _.map(vue.workProcessSteps, step => {
-          return {
-            timeRange: step.beginTime + '-' + (step.endTime ? step.endTime : ''),
-            state: step.stateName,
-            isCurrentStep: step.isCurrentStep === true
-          }
-        })
-        return client.detailWorkflow(val.flowId).then(detail => {
-          _.forEach(detail.stateMachine.states, rowData => {
-            const stepsInState = _.filter(vue.processTraceTableHeaders, h => h.state === rowData.name)
-            _.forEach(stepsInState, step => {
-              rowData[step.timeRange] = step.timeRange
-              if (step.isCurrentStep === true) {
-                rowData.currentStepTimeRange = step.timeRange
-              }
-            })
-          })
-          vue.processTraceTableData = detail.stateMachine.states
-        })
-      }).catch((error) => {
-        vue.workProcessStepsLoadingError = 'failed to load work process details'
-        vue.$notify.error({ title: 'Error', message: 'failed to load work process steps: ' + error })
-      }).finally(() => {
-        vue.workProcessStepsLoading = false
-      })
-
+    work () {
       this.loadContributions()
     }
   },
@@ -384,17 +297,16 @@ export default {
       return
     }
 
-    const vue = this
     const mask = this.$loading({ lock: true, text: 'requesting', spinner: 'el-icon-loading', background: 'rgba(255,255,255,0.7)' })
     client.detailWork(this.workId).then((resp) => {
-      vue.work = resp
-      vue.workLabels = resp.labels
-      this.$emit('workLoaded', vue.work)
-      return client.detailWorkflow(vue.work.flowId)
+      this.work = resp
+      this.workLabels = resp.labels
+      this.$emit('workLoaded', this.work)
+      return client.detailWorkflow(this.work.flowId)
     }).then(resp => {
-      vue.workflow = resp
+      this.workflow = resp
     }).catch((error) => {
-      vue.$notify.error({ title: 'Error', message: 'failed to load work and workflow: ' + error })
+      this.$notify.error({ title: 'Error', message: 'failed to load work and workflow: ' + error })
     }).finally(() => {
       mask.close()
     })
@@ -419,15 +331,7 @@ export default {
   padding: 0 5px;
   margin-right: 5px;
 }
-.state-category-stack-1 {
-  background-color: #daf3f8;
-}
-.state-category-stack-2 {
-  background-color: #fcf7cd;
-}
-.state-category-stack-3 {
-  background-color: #e2e2e2;
-}
+
 .step-current {
   color: deepskyblue;
   font-weight: bold;
