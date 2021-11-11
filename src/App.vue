@@ -235,4 +235,17 @@ body {
 .state-category-stack-3 {
   background-color: #e2e2e2;
 }
+
+.state-category-theme-dark-1 {
+  background-color: skyblue;
+}
+.state-category-theme-dark-2 {
+  background-color: orange;
+}
+.state-category-theme-dark-3 {
+  background-color: green;
+}
+.state-category-theme-dark-4 {
+  background-color: gray;
+}
 </style>
