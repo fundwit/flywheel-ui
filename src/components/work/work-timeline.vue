@@ -10,10 +10,10 @@
           <span>Timeline</span>
         </template>
         <template v-slot:left="{data}">
-          <span>{{data.name}}</span>
+          <div :class="'state-category-stack-'+data.category">{{data.name}}</div>
         </template>
         <template v-slot:block="{data,item}">
-          <div style="background-color: orange" v-if="data && item">.</div>
+          <div :class="'state-category-theme-dark-'+item.stateCategory" v-if="data && item">.</div>
         </template>
       </v-gantt-chart>
     </div>
