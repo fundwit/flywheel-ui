@@ -13,7 +13,15 @@
           <div :class="'state-category-stack-'+data.category">{{data.name}}</div>
         </template>
         <template v-slot:block="{data,item}">
-          <div :class="'state-category-theme-dark-'+item.stateCategory" v-if="data && item">.</div>
+          <el-popover placement="top-start" title="Step" width="300" trigger="hover">
+            <div>
+              <span v-if="item.endTime">{{ item.beginTime |formatDateTimeMin}} - {{ item.endTime | formatDateTimeMin }}</span>
+              <span v-else>{{ item.beginTime |formatDateTimeMin}} - now</span>
+            </div>
+            <div slot="reference" style="white-space: nowrap;" :class="'state-category-theme-dark-'+item.stateCategory" v-if="data && item">
+              {{formatTimeDuration(item.beginTime, item.endTime)}}
+            </div>
+          </el-popover>
         </template>
       </v-gantt-chart>
     </div>
@@ -24,6 +32,7 @@
 import { client } from '../../flywheel'
 import Moment from 'moment'
 import _ from 'lodash'
+import { formatTime, formatTimeDuration } from '../../times'
 
 export default {
   name: 'WorkTimeline',
@@ -48,6 +57,8 @@ export default {
     this.loadTimeline()
   },
   methods: {
+    formatTime: formatTime,
+    formatTimeDuration: formatTimeDuration,
     loadTimeline () {
       this.workProcessSteps = []
       this.processTraceTableData = []
@@ -70,7 +81,7 @@ export default {
           if (step.endTime) {
             stepEnd = Moment(step.endTime)
           } else if (step.stateCategory > 2) {
-            stepEnd = stepStart.add(1, 'hours')
+            stepEnd = stepStart
           }
           step.end = stepEnd.format('YYYY-MM-DD HH:mm:ss')
 
