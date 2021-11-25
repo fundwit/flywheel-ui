@@ -228,24 +228,35 @@ body {
 
 .state-category-stack-1 {
   background-color: #daf3f8;
+  height: 100%;
 }
 .state-category-stack-2 {
   background-color: #fcf7cd;
+  height: 100%;
 }
 .state-category-stack-3 {
   background-color: #e2e2e2;
+  height: 100%;
 }
 
 .state-category-theme-dark-1 {
   background-color: skyblue;
+  height: 100%;
 }
 .state-category-theme-dark-2 {
   background-color: orange;
+  height: 100%;
 }
 .state-category-theme-dark-3 {
   background-color: green;
+  height: 100%;
 }
 .state-category-theme-dark-4 {
   background-color: gray;
+  height: 100%;
+}
+
+.gantt-block-item {
+  min-width: 2px;
 }
 </style>
