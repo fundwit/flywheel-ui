@@ -15,11 +15,27 @@
         <template v-slot:block="{data,item}">
           <el-popover placement="top-start" title="Step" width="300" trigger="hover">
             <div>
-              <span v-if="item.endTime">{{ item.beginTime |formatDateTimeMin}} - {{ item.endTime | formatDateTimeMin }}</span>
-              <span v-else>{{ item.beginTime |formatDateTimeMin}} - now</span>
+              <div v-if="item.endTime">
+                <div><i class="el-icon-timer"/> {{formatTimeDuration(item.beginTime, item.endTime)}}</div>
+                <div>
+                  <i class="el-icon-time"/>
+                  {{ item.beginTime |formatDateTimeMin}} -
+                  <i class="el-icon-time"/>
+                  {{ item.endTime | formatDateTimeMin }}
+                  </div>
+              </div>
+              <div v-else-if="data.category <= 2">
+                <div><i class="el-icon-timer"/> {{formatTimeDuration(item.beginTime, item.endTime)}}</div>
+                <div><i class="el-icon-time"/> {{ item.beginTime |formatDateTimeMin}} - <i class="el-icon-time"/> now</div>
+              </div>
+              <div v-else>
+                <div><i class="el-icon-timer"/> {{ Moment(item.beginTime).fromNow()}}, work done</div>
+                <div><i class="el-icon-time"/> {{ item.beginTime |formatDateTimeMin}}</div>
+              </div>
             </div>
             <div slot="reference" style="white-space: nowrap;" :class="'state-category-theme-dark-'+item.stateCategory" v-if="data && item">
-              {{formatTimeDuration(item.beginTime, item.endTime)}}
+              <span v-if="item.endTime || data.category <=2 ">{{formatTimeDuration(item.beginTime, item.endTime)}}</span>
+              <span v-else>{{ Moment(item.beginTime).fromNow()}}</span>
             </div>
           </el-popover>
         </template>
@@ -58,6 +74,7 @@ export default {
     this.loadTimeline()
   },
   methods: {
+    Moment: Moment,
     formatTime: formatTime,
     formatTimeDuration: formatTimeDuration,
     loadTimeline () {
@@ -93,14 +110,14 @@ export default {
             maxTime = stepEnd
           }
         })
-        let range = maxTime.diff(minTime, 'minute')
-        const rate = range / (1440*15)
+        const range = maxTime.diff(minTime, 'minute')
+        const rate = range / (1440 * 15)
 
         vue.startTime = minTime.format('YYYY-MM-DD HH:mm:ss')
         if (rate > 1) {
           this.scale = 1440 * Math.ceil(rate)
           vue.endTime = maxTime.add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
-        } else if (range < 1440 * 3){
+        } else if (range < 1440 * 3) {
           this.scale = 240
           vue.endTime = maxTime.format('YYYY-MM-DD HH:mm:ss')
         } else {
