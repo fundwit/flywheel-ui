@@ -5,7 +5,7 @@
       <div v-if="workProcessStepsLoadingError">
         error: {{workProcessStepsLoadingError}}
       </div>
-      <v-gantt-chart v-else ref="trace" :startTime="startTime" :endTime="endTime" :datas="ganttDatas" :scale="1440">
+      <v-gantt-chart v-else ref="trace" :startTime="startTime" :endTime="endTime" :datas="ganttDatas" :scale="scale">
         <template v-slot:title>
           <span>Timeline</span>
         </template>
@@ -41,6 +41,7 @@ export default {
   },
   data () {
     return {
+      scale: 1440,
       workProcessSteps: [],
       processTraceTableData: [],
 
@@ -73,7 +74,7 @@ export default {
       client.queryWorkProcessSteps(this.work.id).then((resp) => {
         vue.workProcessSteps = resp.data
         let minTime = Moment()
-        let maxTime = Moment()
+        let maxTime = Moment(0)
         _.forEach(vue.workProcessSteps, step => {
           const stepStart = Moment(step.beginTime)
           step.start = stepStart.format('YYYY-MM-DD HH:mm:ss')
@@ -92,8 +93,20 @@ export default {
             maxTime = stepEnd
           }
         })
-        vue.startTime = minTime.add(-2, 'days').format('YYYY-MM-DD HH:mm:ss')
-        vue.endTime = maxTime.add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
+        let range = maxTime.diff(minTime, 'minute')
+        const rate = range / (1440*15)
+
+        vue.startTime = minTime.format('YYYY-MM-DD HH:mm:ss')
+        if (rate > 1) {
+          this.scale = 1440 * Math.ceil(rate)
+          vue.endTime = maxTime.add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
+        } else if (range < 1440 * 3){
+          this.scale = 240
+          vue.endTime = maxTime.format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          this.scale = 1440
+          vue.endTime = maxTime.add(2, 'days').format('YYYY-MM-DD HH:mm:ss')
+        }
 
         // map[stateName][]WorkProcessStep
         const stateStepsMap = _.groupBy(vue.workProcessSteps, s => s.stateName)
